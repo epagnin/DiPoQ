@@ -11,8 +11,7 @@ A good seminar explains the basic problem, the main constructions or techniques,
 
 ## Course Calendar
 
-All seminars are *onlive* (i.e., live + online) at this
-[zoom link](TODO).
+All seminars are live (in person), unless otherwise specified.
 
 ## Schedule and Topics
 
