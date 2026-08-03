@@ -40,15 +40,16 @@ Each handout should be self-contained and pedagogical. It should aim to explain 
 A good handout should contain:
 
 1. **Title and authors**
-2. **Motivation and context**
-3. **Required Math background**
-4. **Assumptions/Problems definitions** (not just statements, but also intuitions)
-5. **Core construction, theorem, attack, or technique**
-6. **What (else) can we build from these?**
-7. **Known limitations** 
-8. **Open Problems**
-9.  **Your main take aways**
-10. **List of References / Further Reading**
+2. **Table of Contents**
+3. **Gentle introduction and context**
+4. **Math background**
+5. **Assumptions/Problems definitions** (not just statements, but also intuitions)
+6. **Core construction, theorem, attack, or technique**
+7. **What (else) can we build from these?**
+8. **Known limitations** 
+9. **Open Problems**
+10. **Your main take aways**
+11. **List of References / Further Reading**
 
 The handout should be written clearly, in English, in latex, typst or markdown language. Submit both source files and compiled pdf. Keep in mind that your fellow attendees (and maybe future master students) should be able to use it as study material before the seminar.
 
@@ -105,34 +106,31 @@ A suggested structure is:
 
 At the end of the course, participants should be able to:
 
-- Explain the main families of post-quantum cryptographic assumptions.
+- Explain and compare the main families of post-quantum cryptographic assumptions.
 - Describe the design principles behind major post-quantum KEMs and signatures.
-- Compare lattice-based, code-based, hash-based, multivariate, and isogeny-based
-  approaches.
 - Understand the role of quantum algorithms in the post-quantum threat model.
-- Read and interpret research papers in post-quantum cryptography.
-- Identify open problems in post-quantum design, cryptanalysis, proofs, mplementation, and deployment.
-- Prepare pedagogical technical material for a cryptographic audience.
+- Identify open problems in post-quantum design, cryptanalysis, proofs.
+- Prepare pedagogical technical material for a masters audience.
 - Lead a research-level discussion on a developing area of cryptography.
 
 ## Credit Calculation
 
-**3hp credit** for preparing and giving one paired seminar on two topics.
+**3hp credit** for delivering one paired seminar.  
+**0.5** for studying and attending other's seminars
 
-This corresponds roughly to:
+### Delivering seminar
 
-- 40 hours studying the two selected topics,
-- 10 hours finding and organizing resources,
-- 20 hours preparing the handouts,
-- 8 hours preparing the seminar,
-- 2 hours delivering the seminar.
+- 40hrs for studying (this is 1 week of full work),
+- 10hrs for finding and organizing resources,
+- 20hrs for preparing the handouts,
+- 8hrs for preparing the seminar,
+- 2hrs for delivering the seminar.
 
-**0.5hp credit** for preparing for and attending one seminar.
-
-This corresponds roughly to:
-
-- 2 hours attending the seminar,
-- approximately 1.5 days studying the handouts and selected resources.
+### Attending seminar
+- 8hrs for reading the handouts (this is 1 full day of work)
+- 2hrs for thinking of good questions to ask during the seminar
+- 1hr for giving feedback (either on the presentation or on the handouts) 
+- 2hrs for attending the seminar.
 
 #### Back-of-the-envelope credit count
 
@@ -141,7 +139,7 @@ Let `p` be the number of presenting pairs.
 - Presenting one paired seminar: **3hp**
 - Attending the other seminars: **0.5hp × (p - 1)**
 
-For example, if there are 5 seminars:
+For example, if there are 5 seminars and you present twice:
 
 - Presenter credit: **6hp** (2x3)
 - Attendance credit: **0.5hp × 3 = 1.5hp**
