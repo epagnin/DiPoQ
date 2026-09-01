@@ -24,8 +24,8 @@ Due to the large body of work on LBC, I suggest 3 people there, and to compensat
 Date | Who | Topic (the current order is only a suggestion) | Handout
 ---|---|---|---
 **TBD** | TBD | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
-**TBD** | E | Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS | TBD
-**TBD** | E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
+**TBD** | E + | Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS | TBD
+**TBD** | E + | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
 **TBD** | + S | Isogeny-based cryptography after SIDH/SIKE | TBD
 **TBD** | TBD | Multivariate cryptography | TBD
 **TBD** | TBD | Quantum algorithms for attacking cryptography | TBD
