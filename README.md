@@ -23,14 +23,14 @@ Due to the large body of work on LBC, I suggest 3 people there, and to compensat
 
 Date | Who | Topic (the current order is only a suggestion) | Handout
 ---|---|---|---
-**TBD** | TBD | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
-**TBD** | TBD | Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS | TBD
-**TBD** | TBD | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
-**TBD** | + S | Isogeny-based cryptography after SIDH/SIKE | TBD
-**TBD** | TBD | Multivariate cryptography | TBD
-**TBD** | TBD | Quantum algorithms for attacking cryptography | TBD
-**TBD** | TBD | Other: e.g., post-quantum signatures from MPC-in-the-head, information-theoretic constructions | TBD
-**TBD** | TBD | Crypto-agility, hybrid solutions, and migration to post-quantum cryptography | TBD
+**W47** | E + H + T | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
+**TBD** | TBD | ~~Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS~~ | TBD
+**W51** | A + E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
+**mid/end Nov** | L + S | Isogeny-based cryptography after SIDH/SIKE | TBD
+**Jan 2027** | L + H | Multivariate cryptography | TBD
+**not Jan** | A + T | Quantum algorithms for attacking cryptography | TBD
+**TBD** | TBD | ~~Other: e.g., post-quantum signatures from MPC-in-the-head, information-theoretic constructions~~ | TBD
+**TBD** | TBD | ~~Crypto-agility, hybrid solutions, and migration to post-quantum cryptography~~ | TBD
 
 
 ## Handout Requirements
