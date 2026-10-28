@@ -38,6 +38,10 @@ In particular, setting $\gamma = 1$ gives the exact Shortest Vector Problem (SVP
 \begin{definition}[Approximate Shortest Independent Vectors Problem ($\gamma$-SIVP)]
     Given a full-rank basis $B$ of an $\nd$-dimensional lattice $\LL(B)$, output a set $S = \{ s_i \} \subset \LL$ of $\nd$ linearly independent lattice vectors where $|| s_i || \leq \gamma(n) \lambda_n(\LL)$ for all $i$.
 \end{definition}
+
+\begin{definition}[Bounded Distance Decoding ($\gamma$-BDD)]
+    Given a basis $B$ of an $\nd$-dimensional lattice $\LL(B)$ and a target point $t \in \RR^\nd$ such that $\mathrm{dist}(t, \LL) < d = \lambda_1(\LL)/(2 \gamma(\nd))$, find the unique lattice vector closest to the target point $t$, i.e. such that $|| t - v || < d$.
+\end{definition}
 \input{sections/preliminaries/SVP.tex}
 \input{sections/preliminaries/CVP.tex}
 
