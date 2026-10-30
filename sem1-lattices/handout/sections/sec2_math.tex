@@ -45,13 +45,37 @@ As the name suggests, this is a decision problem (also referred to as a promise 
 Another promise problem is the following, in which we are promised that there exists a lattice point fairly close to a target point $\vv t$. 
 
 \begin{definition}[Bounded Distance Decoding ($\gamma$-BDD)]
-    Given a basis $\vv{B}$ of an $\nd$-dimensional lattice $\LL(\vv{B})$ and a target point $\vv t \in \RR^\nd$ such that $\mathrm{dist}(\vv t, \LL) < d = \lambda_1(\LL)/(2 \gamma(\nd))$, find the unique lattice vector $\vv v \in \LL$ closest to the target point $t$, i.e. such that $|| \vv t - \vv v || < d$.
+    Given a basis $\vv{B}$ of an $\nd$-dimensional lattice $\LL(\vv{B})$ and a target point $\vv t \in \RR^\nd$ such that $\mathrm{dist}(\vv t, \LL) < d = \lambda_1(\LL)/(2 \gamma(\nd))$, find the unique lattice vector $\vv v \in \LL$ closest to the target point $\vv t$, i.e. such that $|| \vv t - \vv v || < d$.
 \end{definition}
 
-$\gamma$-BDD is actually a relaxation of the $\gamma$-Closest Vector Problem ($\gamma$-CVP), where the promised existence of a lattice point is removed. CVP is perhaps the second most studied computational lattice problem with a plethora of hardness results. Still however, there is no cryptographic assumption that reduces to CVP at the time of writing. It is intuitively clear that $\gamma$-BDD is easier than $\gamma$-CVP.
+$\gamma$-BDD is actually a relaxation of the $\gamma$-Closest Vector Problem ($\gamma$-CVP), where the promised existence of a lattice point is removed. It is intuitively clear that $\gamma$-BDD is easier than $\gamma$-CVP. CVP is perhaps the second most studied computational lattice problem with a plethora of hardness results. Still however, there is no cryptographic assumption that reduces to CVP at the time of writing. 
 
-The above problems are normally hard to solve given a random basis but significantly easier to solve given a basis of short and close to orthogonal basis vectors. The computational problems above are therefore usually solved using \textit{reduction algorithms}, which turns a ``bad'' basis (containing long and non-orthogonal basis vectors) into a good one. Despite extensive study for several decades, the problems appear to be intractable. There exist polynomial-time algorithms for solving instances with approximation factors $\gamma = 2^{\Theta(\nd \log \log \nd / \log \nd)}$ that are slightly sub-exponential, such as LLL (due to Lenstra, Lenstra and Lovász) and derivatives. For smaller (i.e. polynomial) approximation factors, the algorithms have at least exponential time and/or space complexity.
+The above problems are normally hard to solve given a random basis but significantly easier to solve (or trivially solved) given a basis of short and close to orthogonal basis vectors. The computational problems above are therefore usually solved using \textit{reduction algorithms}, which turns a ``bad'' basis (containing long and non-orthogonal basis vectors) into a good one. Despite extensive study for several decades, the problems appear to be intractable. There exist polynomial-time algorithms for solving instances with approximation factors $\gamma = 2^{\Theta(\nd \log \log \nd / \log \nd)}$ that are slightly sub-exponential, such as LLL (due to Lenstra, Lenstra and Lovász) and derivatives. For smaller (i.e. polynomial) approximation factors, the algorithms have at least exponential time and/or space complexity. Importantly, this is also the state for quantum algorithms, which only offer a modest speedup over classical ones.
 
-Some lattice problems are known to be NP-hard 
+Some lattice problems are known to be NP-hard under certain assumptions (such as randomised reductions for SVP). However, the complexity results are not of relevance for the approximation factors used in cryptography. Instead, complexity calculations rely on heuristic estimates for the fastest available solution algorithms.
+
 \subsection{Discrete Gaussians}
-Definition.
+Lattice-based cryptographic constructs often make use of probability distributions related to the Gaussian distribution. We give its definition and discuss some relevant aspects.
+
+\begin{definition}[Gaussian function]
+    For any positive integer $\nd$ and real $s > 0$, define the Gaussian function $\rho_s : \RR^\nd \to \RR^+$ with parameter $s$ as \[ \rho_s(\vv x) = \exp(-\pi || \vv x ||^2 / s^2). \]
+\end{definition}
+
+\begin{definition}[Gaussian distribution]
+    The (spherical) Gaussian distribution $D_s$ with parameters $s$ over $\RR^\nd$ is given by a probability density function that is the Gaussian function normalised over $\RR^\nd$
+    \[ f(\vv x) = \frac{\rho_s(\vv x)}{\int_{\RR^\nd} \rho_s(x) d \vv x} = \frac{\rho_s(\vv x)}{s^\nd}. \]
+\end{definition}
+
+\begin{definition}[Discrete Gaussian]
+    The discrete Gaussian distribution $D_{\LL, s}$ over a lattice $\LL$ and with a parameter $s$ is the Gaussian distribution restricted to the lattice
+    \[ D_{\LL, s} \propto \begin{cases}
+        \rho_s(\vv x) & x \in \LL \\
+        0 & \mathrm{elsewhere}.
+    \end{cases} \]
+\end{definition}
+
+A useful quantity in the context of discrete Gaussians and lattices is the following.
+\begin{definition}[Smoothing parameter]
+    Let $\LL$ be a lattice and $r, \epsilon > 0$. The smoothing parameter $\eta_\epsilon(\LL)$ is the smallest $r$ such that $\rho_{1/r}(\LL^* \setminus \{ 0 \}) \leq \epsilon$.
+\end{definition}
+The definition is quite non-explanatory. Intuitively, the smoothing parameter is the amount of Gaussian ``blur'' needed to smooth out the discrete structure of the lattice $\LL$.
