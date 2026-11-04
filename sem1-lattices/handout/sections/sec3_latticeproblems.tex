@@ -68,6 +68,21 @@ which is also a $q$-ary lattice. In fact, $\LL^\bot(\vv A)$ is the \textit{dual}
 A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. This means SIS and LWE are reducible to each other. The interested reader is referred to <sources>.
 
 \subsection{Ring-LWE}
-Problem statement, hardness computational problems on ideal lattices.
+Lyabashevsky, Peikert and Regev (LPR) introduced a structured variant of LWE, called Ring LWE in 2010. The structure of Ring LWE allows for speedups because ring multiplications replace the generic matrix-vector multiplications in LWE. Ring multiplication can be performed in quasi-linear time using FFT-like techniques (called the Number Theoretic Transform (NTT)). Ring LWE is parametrised over a ring $R$ of degree $\nd$ over $\ZZ$ and a modulus $q$, together with an error distribution $\chi$ over $R$. The primary working environment is the quotient ring $R_q = R/qR$. $R$ is typically a cyclotomic ring $R = \ZZ[x]/(x^\nd + 1)$ for $\nd$ a power of two and the error distirbution is typically a discrete Gaussian in the canonical embedding of $R$ with an error rate $\alpha < 1$ relative to $q$.
+
+\begin{definition}[Ring LWE sample]
+    Given a secret $s \in R_q$ and an error distribution $\chi$ over $R$, a Ring LWE sample over $R_q \times R_q$ is constructed by picking $a \randfrom R_q$ and $e \leftarrow \chi$ and outputting \[ (a, b = s \cdot a + e \nmod q). \]
+\end{definition}
+
+Again, without the error, $s$ can be computed as $s = b_i \cdot a_i^{-1}$ if $a_i$ is invertible, which means the error hides the secret. The corresponding decision problem is the following.
+
+\begin{definition}[Decision Ring LWE]
+    Given $m$ independent samples $(a_i, b_i) \in R_q \times R_q$ where every sample is either (i) a Ring LWE sample for a uniform $s \in R_q$ or (ii) a uniform sample, distinguish which is the case.
+\end{definition}
+
+A hardness result similar to that of LWE holds for Ring LWE, due to LPR.
+\begin{theorem}[Ring LWE main theorem]
+    For any number $m = \poly(\nd)$, cyclotomic ring $R$ over $\ZZ$ of degree $\nd$ and appropriate choices of $q$ and $\chi$ of error rate $\alpha < 1$, solving the Ring LWE problem is at least as hard as solving SVP$_\gamma$ quantumly on arbitrary ideal lattices in $R$, for some $\gamma = \poly(\nd)/\alpha$.
+\end{theorem}
 
 \subsection{Module-LWE}
