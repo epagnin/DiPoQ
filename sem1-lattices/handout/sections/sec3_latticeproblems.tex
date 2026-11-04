@@ -1,9 +1,71 @@
 \section{Lattice problems}
 \subsection{LWE}
-Problem statement, maybe example, existing reductions to computational problems (hardness).
+The Learning With Errors assumption can be summarised as ``it is hard to solve systems of linear equations with noise''. We begin with providing some intuition on the problem, before proceeding to formal definitions and hardness results.
 
-\subsection{SIS}
-Problem statement, relationship to LWE.
+\subsubsection{Intuition}
+Assume we are given the ring of integers modulo $q$, $\Zq$, and $m$ modular linear equations in dimension $\nd$. More precisely, assume we know a matrix $\vv A \in \ZZ^{m \times \nd}$, a secret vector $\vv s \in \Zq^\nd$ and a right hand side $\vv b \in \Zq^m$ such that $\vv A \vv s = \vv b$. Given $\vv A$ and $\vv b$, by using Gaussian elimination, we can solve this efficiently and recover the secret $\vv s$, or state that no solution exists. 
+
+This problem becomes significantly harder when some noise is added to the equation. Suppose that we perturb the system of equations by adding a noise vector $\vv e \in \Zq^m$ that has small coefficients drawn from some distribution $\chi$, so that $\vv A \vv s + \vv e = \vv b$. Given $\vv A$ and $\vv b$, we cannot use Gaussian elimination to find $\vv s$. In fact, apart from trial and error, we know of no efficient algorithms to find $\vv s$.
+
+Consider the following example.
+\begin{example}
+    Let $\vv A = \begin{bmatrix}
+        3 & 7 \\ 2 & 1 \\ 11 & 1
+    \end{bmatrix}$, $\vv b = \begin{bmatrix}
+        10 \\ 12 \\ 9
+    \end{bmatrix}$, $q = 13$ and $\vv s = \begin{bmatrix}
+        s_1 \\ s_2
+    \end{bmatrix}$. Here, $\nd = 2$ and $m = 3$. We get no information on $\vv e$ nor $\vv s$, thus there is apparent way to solve $\vv A \vv s \approx \vv b$. However, given a solution $\vv s = (11, 4)$ and a noise vector $\vv e = (1, -1, 1)$, the equation $\vv A \vv s + \vv e = \vv b$ is easily checked.
+\end{example}
+
+The core idea of LWE-based cryptographic primitives is to publish $(\vv A, \vv b)$ as a public key, while keeping $\vv s$ secret. For security, the error distribution $\chi$ must be sufficiently large to hide the structure in the system of equations. At the same time, correctness of the cryptosystem demands that the errors cannot be too large, since that would completely remove the structure and turn the equations into random noise. Hardness results state that if the error is selected correctly, noisy linear equations $\vv A \vv s + \vv e = \vv b$ become indistinguishable from randomly sampling $\vv b$ directly, while the structure of the equation $\vv A \vv s \approx \vv b$ is preserved. In this sweet spot, we can build cryptography.
+
+\subsubsection{The LWE problems}
+We formally define LWE and the associated computational problems.
+\begin{definition}[LWE sample]
+    Given a secret $\vv s \in \ZZ^\nd_q$, and an error distribution $\chi$, an LWE sample over $\ZZ_q^\nd \times \ZZ$ is constructed by picking $a \randfrom \ZZ_q^\nd$ and $e \leftarrow \chi$ and outputting
+    \[ (\vv a, b = \langle \vv s, \vv a \rangle + e \nmod q). \]
+\end{definition}
+It is customary to collect multiple LWE samples in a matrix as discussed above. Given $m$ samples $(\vv a_i, b_i)$, we collect the $\vv a_i$ in a matrix $\vv A \in \Zq^{m \times \nd}$ and the right hand sides $b_i$ (and errors $e_i$) in a vector $\vv b \in \Zq^m$ (with $\vv e \leftarrow \chi^m$) so that $\vv A \vv s + \vv e = \vv b$.
+
+The LWE problem comes as a search and as a decision problem. The search problem asks for the secret $\vv s$ given many LWE samples, while the decision problem asks to distinguish between many LWE samples and uniform samples. The formal definitions are given below.
+
+\begin{definition}[Search LWE$_{\nd, q, \chi, m}$]
+    Given $m$ independent LWE samples $(\vv a_i, b_i) \in \ZZ_q^\nd \times \Zq$ for a uniformly random $\vv s \in \Zq^\nd$, determine $\vv s$.
+\end{definition}
+
+With the samples collected in a matrix, the search LWE problem can be seen as an average-case BDD problem on the lattice
+\[ \LL(\vv A) = \{ \vv A^T \vv s : \vv s \in \Zq^\nd \} + q \ZZ^m. \]
+The right hand side $\vv b$ is close to exactly one vector in this lattice, and the problem is to find it. We call this lattice the LWE lattice. The lattice has a special structure, namely that $q \ZZ \subseteq \LL$, which is called a $q$-ary lattice.
+
+\begin{definition}[Decision LWE$_{\nd, q, \chi, m}$]
+    Given $m$ independent samples where every samples is either (i) an LWE sample for a uniform $\vv s \in \Zq^\nd$ or (ii) a uniform sample, distinguish which is the case.
+\end{definition}
+
+The search and decision LWE problems are equivalent in that there exists a reduction from decision LWE to search LWE, due to Regev. An efficient distinguisher for LWE also gives a polynomial-time algorithm for solving search LWE. Due to this fact, we simply refer to the ``LWE problem'' as whichever variant is most convenient.
+
+\subsubsection{Hardness of LWE}
+The main hardness result of LWE is the theorem below and is due to Regev. The theorem constructs a quantum reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ in the worst case to decision LWE. In other words, if an efficient distinguisher for LWE existed, it would yield a polynomial-time quantum algorithm for solving any instance GapSVP$_\gamma$ and SIVP$_\gamma$. As mentioned previously, no such algorithm for polynomial-size approximation factors $\gamma$ is known at the time of writing.
+
+\begin{theorem}[LWE main theorem]
+    For any number $m = \poly(\nd)$ of LWE samples, any prime $q \leq 2^{\poly(\nd)}$ and any discrete Gaussian distribution $\chi_\alpha$ with $\alpha q > 2 \sqrt{\nd}$ and $0 < \alpha < 1$, if there exists an efficient algorithm that solves the decision LWE problem over the given parameters, then there exists an efficient quantum algorithm that solves GapSVP$_\gamma$ and SIVP$_\gamma$ for $\gamma = \tilde{O}(\nd/\alpha)$ on $\nd$-dimensional lattices.
+\end{theorem}
+
+This theorem is the reason that LWE is one of the most robust assumptions for lattice-based cryptography. However, a still unsolved problem is finding a fully classical tight reduction. 
+
+\subsubsection{Short Integer Solutions (SIS)}
+The SIS problem is closely related to LWE and was introduced before LWE by Ajtai in 1996. It is a natural starting point for one-way functions and collision-resistant hash functions. However, it is not encryption-enabling as LWE is. We present the problem and comment on similarities and differences from LWE.
+
+\begin{definition}[SIS$_{\nd, q, \beta, m}$]
+    Given a uniformly random matrix $\vv A \randfrom \ZZ_q^{\nd \times m}$, find a nonzero integer vector $\vv z \in \ZZ^m$ with norm $|| \vv z || \leq \beta$ such that \[ \vv A \vv z = \sum_{i = 1}^m a_i \cdot z_i = \vv 0 \in \ZZ_q^\nd. \]
+\end{definition}
+Similarly to the intuition for LWE, this problem is easy to solve using Gaussian elimination without the norm constraint. There also exists an upper bound $\beta < q$, since $\vv z = (q, 0, \ldots, 0)$ is a valid solution. The resulting family of functions $f_{\vv A}(\vv z) = \vv A \vv z$ can be shown to be collision resistant, since a collision would directly lead to an SIS solution. As with the size of the error in LWE, $\beta$ must be selected sufficiently large that a solution exists (for correctness), while keeping it small enough that the problem is hard. The sweet spot results in cryptography.
+
+SIS is an average case (approximate) shortest vector problem on the lattices
+\[ \LL^\bot(\vv A) = \{ \vv z \in \ZZ^m : \vv A \vv z = 0 \in \ZZ_q^\nd \}, \]
+which is also a $q$-ary lattice. In fact, $\LL^\bot(\vv A)$ is the \textit{dual} (up to scaling factor) of the LWE lattice $\LL(\vv A)$, formally $\LL(\vv A) = q \LL^\bot(\vv A)^*$.
+
+A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. This means SIS and LWE are reducible to each other. The interested reader is referred to <sources>.
 
 \subsection{Ring-LWE}
 Problem statement, hardness computational problems on ideal lattices.
