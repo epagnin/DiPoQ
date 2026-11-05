@@ -1,6 +1,6 @@
 \section{Lattice problems}
 \subsection{Learning With Errors (LWE)}
-The Learning With Errors assumption can be summarised as ``it is hard to solve systems of linear equations with noise''. It was introduced by Regev in 2005 \cite{reg05} We begin with providing some intuition on the problem, before proceeding to formal definitions and hardness results. The exposition here is mainly based on \cite{peikert_dec} and \cite{cryptoeprint:2021/1358}.
+The Learning With Errors assumption can be summarised as ``it is hard to solve systems of linear equations with noise''. It was introduced by Regev in 2005 \cite{reg05}. We begin with providing some intuition on the problem, before proceeding to formal definitions and hardness results. The exposition here is mainly based on \cite{peikert_dec} and \cite{cryptoeprint:2021/1358}.
 
 \subsubsection{Intuition}
 Assume we are given the ring of integers modulo $q$, $\Zq$, and $m$ modular linear equations in dimension $\nd$. More precisely, assume we know a matrix $\vv A \in \ZZ^{m \times \nd}$, a secret vector $\vv s \in \Zq^\nd$ and a right hand side $\vv b \in \Zq^m$ such that $\vv A \vv s = \vv b$. Given $\vv A$ and $\vv b$, by using Gaussian elimination, we can solve this efficiently and recover the secret $\vv s$, or state that no solution exists. 
