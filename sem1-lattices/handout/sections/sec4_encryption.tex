@@ -1,6 +1,16 @@
 \section{Encryption from LWE}
 
 \subsection{A simple ring-based encryption scheme}
+The following public-key encryption scheme, often referred to as LPR encryption, was originally presented in \cite{lpr10} (for power-of-two cyclotomic rings) with a full version in \cite{lpr13}. It is compact and easy to describe, yet impressively powerful, since the same idea is used for more advanced encryption schemes. The scheme is IND-CPA secure from the hardness of the Decision Ring-LWE problem \cite[Lemma 5.1]{lpr13}.
+
+Public parameters are a ring $R = \ZZ[x]/(x^\nd + 1)$ for $n$ a power of two, a prime $q$ and an error distribution $\chi$ over $R$.
+
+\begin{itemize}
+    \item[-] \textsf{KeyGen.} Pick $a \randfrom R_q$ and (small) $s,e \leftarrow \chi$. Note here $s$ is sampled from the error distribution. Output $(\mathsf{sk}, \mathsf{pk}) = (s, a \cdot s + e) \in R_q \times R_q$.
+    \item[-] \textsf{Enc.} Given an $\nd$-bit message $z \in \{ 0,1 \}^\nd$, consider it as an element of $R$ where the bits are coefficients of a polynomial. Pick (small) $r, e_1, e_2 \leftarrow \chi$. Output \[ (c_1, c_2) = (a \cdot r + e_1 \nmod q, b \cdot r + e_2 + \lfloor q/2 \rceil \cdot z \nmod q), \] where $\lfloor \cdot \rceil$ denotes rounding to the closest integer. 
+    \item[-] \textsf{Dec.} Given $(c_1, c_2)$, compute \[ c_2 - c_1 \cdot s = (r \cdot e - s \cdot e_1 + e_2) + \lfloor q/2 \rceil \cdot z \nmod q. \] If the error distribution and $q$ are appropriately selected, the error terms $r \cdot e - s \cdot e_1 + e_2$ will collectively have a magnitude less than $q/4$ so that the bits of $z$ can be recovered correctly by rounding to the closest of $0$ and $\lfloor q/2 \rceil$.
+\end{itemize}
+LPR is also sometimes called ``Noisy ElGamal'' due to it's similarity to the ElGamal cryptosystem. The random $a$ is analogous to a generator of a cyclic multiplicative group, and exponentiation is replaced by noisy products. 
 
 \subsection{ML-KEM}
 
