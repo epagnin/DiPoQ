@@ -1,0 +1,498 @@
+\documentclass[11pt]{article}
+
+%==========================================================
+%  Packages
+%==========================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+%==========================================================
+%  Theorem-like environments
+%==========================================================
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{problem}[definition]{Problem}
+
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{proposition}[definition]{Proposition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+%==========================================================
+%  Notation macros
+%==========================================================
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Zq}{\Z_q}
+\newcommand{\Zp}{\Z_p^*}
+\newcommand{\vA}{\mathbf{A}}
+\newcommand{\vB}{\mathbf{B}}
+\newcommand{\vs}{\mathbf{s}}
+\newcommand{\ve}{\mathbf{e}}
+\newcommand{\vb}{\mathbf{b}}
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vz}{\mathbf{z}}
+\newcommand{\vzero}{\mathbf{0}}
+\newcommand{\lat}{\mathcal{L}}
+\newcommand{\dlog}{\mathrm{DLOG}}
+\newcommand{\cdh}{\mathrm{CDH}}
+\newcommand{\ddh}{\mathrm{DDH}}
+\newcommand{\lwe}{\mathrm{LWE}}
+\newcommand{\sis}{\mathrm{SIS}}
+\newcommand{\svp}{\mathrm{SVP}}
+\newcommand{\sivp}{\mathrm{SIVP}}
+\newcommand{\gapsvp}{\mathrm{GapSVP}}
+\newcommand{\bdd}{\mathrm{BDD}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\abs}[1]{\lvert #1 \rvert}
+\newcommand{\lamone}{\lambda_1}
+\newcommand{\reduces}{\;\leq\;}
+\newcommand{\poly}{\mathrm{poly}}
+
+% Boxed "key idea" environment
+\newtcolorbox{keybox}[1][]{
+  colback=blue!4!white, colframe=blue!50!black,
+  fonttitle=\bfseries, title={#1},
+  boxrule=0.5pt, arc=2pt, left=6pt,right=6pt,top=4pt,bottom=4pt}
+
+%==========================================================
+%  Title
+%==========================================================
+\title{\bfseries Discrete-Log vs.\ Lattice Assumptions\\[2pt]
+\large A Comparison of Their Reduction Structures}
+\author{Study Notes}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+These notes compare two families of cryptographic hardness assumptions:
+the \emph{discrete-logarithm / Diffie--Hellman} family (DLOG, CDH, DDH, and their
+number-theoretic cousins) and the \emph{lattice} family (SVP/SIVP/GapSVP in the worst case,
+and SIS/LWE in the average case). The focus is not on the problems themselves but on the
+\emph{reductions between them} --- across dimensions, across parameters, and between
+search and decision versions --- because it is precisely the reduction structure that
+makes the lattice family robust and the DLOG family fragile. Four themes recur:
+(i) lattice hardness \emph{propagates across dimensions} while DLOG hardness does not
+propagate across moduli; (ii) both families enjoy \emph{random self-reducibility},
+but for DLOG this is only a within-group loop that gives no guidance on choosing the group;
+(iii) the average-case nature of DLOG rests on the \emph{Prime Number Theorem};
+and (iv) \emph{search and decision are provably equivalent for LWE}, whereas in the
+Diffie--Hellman world the decision problem is a separate, strictly stronger, and sometimes
+\emph{false} assumption (pairing groups).
+\end{abstract}
+
+\tableofcontents
+\bigskip
+\hrule
+
+%==========================================================
+\section{Preliminaries}
+%==========================================================
+
+We fix notation and recall the problems that appear throughout.
+
+\subsection{Discrete-logarithm family}
+
+\begin{problem}[Discrete Logarithm, $\dlog$]
+Let $G$ be a cyclic group with generator $g$. Given $h = g^x$, find $x$.
+In $\Zp$ the security parameter is $n = \log p$ (equivalently $n = \log\abs{G}$).
+\end{problem}
+
+\begin{problem}[Computational Diffie--Hellman, $\cdh$]
+Given $g^a$ and $g^b$ (but not $a,b$), compute $g^{ab}$.
+\end{problem}
+
+\begin{problem}[Decisional Diffie--Hellman, $\ddh$]
+Distinguish the distribution $(g^a, g^b, g^{ab})$ from $(g^a, g^b, g^c)$ for independent
+uniform $a,b,c$.
+\end{problem}
+
+\subsection{Lattice family}
+
+A \emph{lattice} $\lat \subset \R^m$ is a discrete additive subgroup, i.e.\ the set of all
+integer combinations of some linearly independent basis $\vB$. Write $\lamone(\lat)$ for the
+length of a shortest nonzero vector and $\lambda_i$ for the successive minima.
+
+\begin{problem}[Shortest / Shortest-Independent Vector, $\svp_\gamma$ / $\sivp_\gamma$]
+Given a basis of $\lat$, find a nonzero $\vz\in\lat$ with $\norm{\vz}\le\gamma\cdot\lamone(\lat)$
+(resp.\ $n$ independent vectors all of length $\le\gamma\cdot\lambda_n$). These are
+\emph{worst-case} problems (over all lattices). Here $\gamma=\gamma(n)\ge 1$ is the
+approximation factor; larger $\gamma$ makes the problem \emph{easier}.
+\end{problem}
+
+\begin{problem}[Short Integer Solution, $\sis_{n,m,q,\beta}$]
+For uniformly random $\vA \in \Zq^{n\times m}$, find a nonzero $\vz \in \Z^m$ with
+\[
+   \vA\vz = \vzero \pmod q, \qquad \norm{\vz}\le\beta .
+\]
+Equivalently, find a short vector in the \emph{kernel lattice}
+$\lat^{\perp}(\vA) = \{\vz\in\Z^m : \vA\vz = \vzero \bmod q\}$.
+\end{problem}
+
+\begin{problem}[Learning With Errors, $\lwe$]
+For uniform $\vA$, secret $\vs\in\Zq^n$, and small error $\ve$, recover $\vs$ from
+\[
+   \vb = \vA^{t}\vs + \ve \pmod q .
+\]
+Geometrically this is \emph{bounded-distance decoding} on the LWE lattice
+$\lat(\vA) = \{\vA^t\vs : \vs\in\Zq^n\} + q\Z^m = q\cdot\lat^\perp(\vA)^{*}$,
+the dual of the SIS lattice up to the scale factor $q$.
+\end{problem}
+
+\begin{remark}[Search vs.\ decision]
+Each problem has a \emph{search} version (find the secret) and a \emph{decision} version
+(distinguish structured from uniform). For DLOG/factoring the decision version is degenerate,
+so the interesting decision problems are $\ddh$ (for DH) and decision-$\lwe$ (for lattices).
+\end{remark}
+
+%==========================================================
+\section{The Lattice Assumption and Its Structure}
+%==========================================================
+
+\begin{assumption}[Lattice assumption]
+The complexity of solving lattice problems in $n$-dimensional lattices grows
+superpolynomially (or exponentially) in $n$.
+\end{assumption}
+
+Three structural features make this assumption unusually robust. Features
+\ref{sec:dim} and \ref{sec:rsr} are the ones absent from the DLOG world;
+Feature~\ref{sec:wc-ac} is the headline property that motivates the whole field.
+
+\subsection{Worst-case to average-case hardness}
+\label{sec:wc-ac}
+
+Cryptography needs \emph{average-case} hardness (random keys must be hard), but a
+problem can be worst-case hard while being easy on average. The lattice family is special
+because \emph{Ajtai's reduction} transports worst-case hardness into the average case:
+
+\begin{theorem}[Ajtai; Regev; informal]
+Average-case $\sis$ (resp.\ $\lwe$) is at least as hard as worst-case
+$\sivp_\gamma$ / $\gapsvp_\gamma$ for some $\gamma=\poly(n)$:
+\[
+   \text{worst-case } \sivp_\gamma \reduces \text{average-case } \sis
+   \qquad(\text{and similarly for } \lwe).
+\]
+\end{theorem}
+
+\begin{keybox}[Why this matters]
+The hardness of the \emph{cryptographic} object (SIS/LWE, defined over a random $\vA$) is
+\emph{inherited} from a \emph{different}, older, independently studied problem (SIVP over
+\emph{arbitrary} lattices). This is an \emph{external anchor}, not a self-loop --- which is
+exactly what the DLOG family lacks.
+\end{keybox}
+
+\subsection{Hardness propagates across dimensions}
+\label{sec:dim}
+
+Lattice problems in dimension $n$ reduce to lattice problems in dimension $m>n$. The
+reduction is a simple \emph{embedding}: given a basis $\vB$ of an $n$-dimensional lattice,
+build the $m$-dimensional block lattice
+\[
+   \vB \;\Longrightarrow\;
+   \begin{pmatrix} \vB & \mathbf 0 \\[2pt] \mathbf 0 & \mathbf D \end{pmatrix},
+   \qquad \mathbf D = \text{large (``}\infty\text{'') diagonal block}.
+\]
+The new coordinates carry basis vectors so long that no short vector ever uses them;
+hence the short vectors of the big lattice are exactly those of $\vB$ (padded with zeros,
+which leaves the norm unchanged). Therefore a solver for dimension $m$ solves dimension $n$:
+\[
+   \underbrace{\text{dim-}n\text{ problem}}_{\text{smaller}}
+   \reduces
+   \underbrace{\text{dim-}m\text{ problem}}_{\text{larger},\; m>n}.
+\]
+
+\begin{keybox}[Two readings of one reduction]
+\textbf{Solver direction:} a dimension-$m$ solver yields a dimension-$n$ solver
+(high $\Rightarrow$ low).\\
+\textbf{Hardness direction:} low-dimensional hardness implies high-dimensional hardness
+(low $\Rightarrow$ high).
+\[
+  \text{dim-}m\ \text{\emph{solver}} \Rightarrow \text{dim-}n\ \text{\emph{solver}}
+  \quad\Longleftrightarrow\quad
+  \text{dim-}n\ \text{\emph{hard}} \Rightarrow \text{dim-}m\ \text{\emph{hard}}.
+\]
+\end{keybox}
+
+The consequence is that the family indexed by dimension $n$ is \emph{connected}: hardness
+in small, well-studied dimensions backstops hardness in all larger dimensions. One does not
+assume each dimension independently; they form a single coherent chain.
+
+\subsection{Random self-reducibility}
+\label{sec:rsr}
+
+Lattices (and the number-theoretic problems) are \emph{random self-reducible}: any fixed
+instance can be re-randomized into a uniformly random one, so that solving random instances
+solves every instance. Hence average-case and worst-case hardness coincide \emph{within the
+problem}. (For SIS/LWE this is subsumed by the stronger external reduction of
+\S\ref{sec:wc-ac}; the point here is that the re-randomization machinery exists and produces
+\emph{genuinely uniform} instances --- the property that lets an average-case oracle be used
+at all.)
+
+%==========================================================
+\section{Why DLOG Is Not Analogous}
+%==========================================================
+
+One may try to mimic the lattice assumption for DLOG.
+
+\begin{assumption}[Alternative DLOG assumption]
+$\dlog(p_n)$ is hard, where $p_n$ is the smallest prime $>2^n$. This is ``equivalent to a
+worst-case family of problems indexed by $n$,'' but the definition is \emph{ad hoc}: the
+choice ``smallest prime $>2^n$'' is arbitrary, reverse-engineered only to manufacture a
+family. Lattices get their family \emph{for free} from the dimension.
+\end{assumption}
+
+\subsection{The Prime Number Theorem makes DLOG average-case}
+\label{sec:pnt}
+
+The natural way to state the DLOG assumption is average-case over a random prime.
+
+\begin{theorem}[Prime Number Theorem]
+$\pi(x) \sim \dfrac{x}{\ln x}$, where $\pi(x)$ counts primes $\le x$.
+\end{theorem}
+
+\begin{proposition}[Counting $n$-bit primes]
+The number of $n$-bit primes is
+\[
+   \pi(2^n)-\pi(2^{n-1})
+   \;\approx\; \frac{2^{n-1}}{n\ln 2}
+   \;=\; \Theta\!\left(\frac{2^n}{n}\right),
+\]
+i.e.\ \emph{exponentially many}. Equivalently, a random $n$-bit integer is prime with
+probability $\approx \dfrac{1}{n\ln 2} = \Theta(1/n)$.
+\end{proposition}
+
+\begin{keybox}[Exponentially many, polynomially dense]
+\begin{itemize}[leftmargin=1.4em,nosep]
+  \item \textbf{Exponential count} $\Theta(2^n/n)$ $\Rightarrow$ the key space is astronomically
+        large; an adversary cannot enumerate primes.
+  \item \textbf{Polynomial density} $\Theta(1/n)$ $\Rightarrow$ one can \emph{sample} a random
+        $n$-bit prime in polynomial time ($\approx n$ primality tests).
+\end{itemize}
+This is why the DLOG assumption is stated as ``$\dlog$ is hard for \emph{random} $p$'':
+there are exponentially many groups to choose from, $p$ is drawn uniformly among $n$-bit
+primes, and the assumption is average-case over that choice.
+\end{keybox}
+
+\subsection{Hardness does not propagate across moduli}
+
+This is the crucial disanalogy with \S\ref{sec:dim}. There is \emph{no known} reduction
+between the DLOG problems of different primes:
+\[
+   \dlog(p_n) \;\overset{?}{\Longrightarrow}\; \dlog(p_{n+1}),
+   \qquad\qquad
+   \dlog(\Z_p^*) \;\overset{?}{\reduces}\; \dlog(\Z_q^*).
+\]
+The groups $\Z_{p}^*$ and $\Z_{q}^*$ have unrelated orders and structure; there is no
+padding-style embedding of one into the other. The primes are \emph{isolated islands}: each
+$\dlog(p_n)$ is a \emph{separate} assumption, and random self-reducibility
+(RSR) acts only \emph{within a fixed group} --- it certifies average-case hardness for a
+given $p$ but \textbf{provides no guidance on how to choose $p$}, nor any bridge between
+different $p$. The ``family'' has members that do not talk to each other.
+
+\begin{remark}[Intuition is not a reduction]
+It \emph{feels} intuitive that larger primes should be at least as hard. But the ``$?$''
+above is literal: we have no construction turning one into the other, unlike the explicit,
+provable lattice embedding. Cryptography wants theorems, not vibes.
+\end{remark}
+
+\subsection{Further fragilities of DLOG hardness}
+
+\paragraph{Representation dependence.}
+The group $(\Z_p^*,\cdot)$ is isomorphic to $(\Z_{p-1},+)$, yet ``DLOG'' in the additive
+representation is \emph{trivial} (it is division modulo $p-1$). The \emph{same} group under a
+different natural encoding flips DLOG from hard to easy. Hardness is thus a property of the
+\emph{representation}, not of the group --- whereas lattice hardness is an intrinsic
+geometric property, immune to relabeling.
+
+\paragraph{Group dependence.}
+Different natural groups ($\Z_p^*$, $\Z_{pq}^*$, elliptic curves, extension fields) exhibit
+\emph{widely} different hardness, some with subexponential attacks and some without. There is
+no single ``DLOG is hard''; there is a scattered zoo of group-specific assumptions.
+
+\paragraph{One-directional CRT reduction.}
+The Chinese Remainder Theorem gives $\Z_{pq}\cong\Z_p\times\Z_q$, hence
+\[
+   \dlog(\Z_p^*) \;\Longrightarrow\; \dlog(\Z_{pq}^*)
+\]
+(a composite-group solver projects down to a prime component, so the composite is at least
+as hard as the prime). But the \emph{reverse} direction requires knowing $p,q$ separately,
+i.e.\ \emph{factoring} $pq$. The two directions are asymmetric, and one smuggles in a second
+assumption.
+
+%==========================================================
+\section{Search vs.\ Decision Reductions}
+%==========================================================
+
+Both families have search and decision versions. The contrast lies in whether the two are
+\emph{equivalent}.
+
+\subsection{LWE: search \texorpdfstring{$\Longleftrightarrow$}{<=>} decision}
+
+\paragraph{Easy direction (decision \texorpdfstring{$\reduces$}{<=} search).}
+A search oracle trivially gives a decider. Given $(\vA,\vb)$, run search to get a candidate
+$\vs'$ and test the residual:
+\[
+   \norm{\vb - \vA^t\vs' \bmod q}\ \text{small} \;\Rightarrow\; \text{real LWE},
+   \qquad
+   \text{large} \;\Rightarrow\; \text{uniform}.
+\]
+Checking $\vs'$ costs one matrix multiply; this verifiability is what makes the direction
+trivial. (Note: a small error bound guarantees the answer is \emph{unique and verifiable},
+not that it is \emph{easy to find} --- recovering $\vs$ is still hard because Gaussian
+elimination amplifies the error.)
+
+\paragraph{Hard direction (search \texorpdfstring{$\reduces$}{<=} decision).}
+Here a decision oracle $\mathcal D$ (one bit: ``real vs.\ uniform'') is bootstrapped into
+full recovery of $\vs$, one coordinate at a time. To learn coordinate $s_1$:
+\begin{enumerate}[leftmargin=1.6em,nosep]
+  \item \textbf{Guess} a value $g\in\Zq$ for $s_1$.
+  \item \textbf{Modify} the instance using a \emph{fresh uniform} $r\in\Zq$, so that the
+        residual contribution of the first coordinate becomes $(s_1-g)\cdot r$.
+  \item \textbf{Query} $\mathcal D$ on the modified instance.
+\end{enumerate}
+If the guess is correct, $s_1-g=0$ and the instance stays valid LWE ($\mathcal D$:
+``real''). If the guess is wrong, $s_1-g\neq 0$; since \emph{nonzero $\times$ uniform
+$=$ uniform} in the field $\Zq$, the term $(s_1-g)r$ is uniform and scrambles the sample to
+look random ($\mathcal D$: ``uniform''). Thus
+\[
+   \mathcal D(\text{modified instance}) = \text{``real''} \iff g = s_1 .
+\]
+Trying all $q$ values per coordinate over all $n$ coordinates uses $nq=\poly(n)$ queries
+(for $q=\poly(n)$), recovering $\vs$ entirely.
+
+\begin{keybox}[Why the randomizer $r$ is essential]
+Without $r$, subtracting the guess merely \emph{shifts the secret}, and shifted-secret LWE is
+\emph{still valid LWE}; the oracle answers ``real'' for right \emph{and} wrong guesses,
+leaking nothing. The random $r$ converts a wrong guess into \emph{uniform} --- the only
+signal a decision oracle can recognize. (Same re-randomization principle as in the
+worst-case/average-case reductions: feed the oracle instances from exactly the distribution
+it recognizes.)
+\end{keybox}
+
+\begin{theorem}[Search--decision equivalence for LWE]
+For appropriate parameters, search-$\lwe$ and decision-$\lwe$ are polynomially equivalent.
+\end{theorem}
+
+\begin{keybox}[Consequence]
+One-wayness (search) and pseudorandomness (decision) rest on the \emph{same} assumption.
+Pseudorandomness comes \emph{for free}, which is what lets LWE samples mask messages and
+yield semantically secure encryption (a PRG-level primitive, well above a bare one-way
+function).
+\end{keybox}
+
+\subsection{Diffie--Hellman: search and decision are \emph{not} equivalent}
+
+\paragraph{Easy direction (decision \texorpdfstring{$\reduces$}{<=} search, i.e.\ $\ddh\reduces\cdh$).}
+A $\cdh$ solver gives a $\ddh$ decider: given $(g^a,g^b,Z)$, compute $g^{ab}$ and test
+$Z\overset{?}{=}g^{ab}$. So $\ddh$ is no harder than $\cdh$.
+
+\paragraph{The reverse ($\ddh\Longrightarrow\cdh$) is not available in general.}
+Unlike LWE, one \emph{cannot} generally turn a $\ddh$ distinguisher into a $\cdh$ solver.
+In fact the two problems are \emph{provably inequivalent} in important groups:
+
+\begin{keybox}[Pairing groups: DDH easy, CDH hard]
+On \emph{pairing-friendly elliptic curves} there is a bilinear map $e$ with
+$e(g^a,g^b)=e(g,g)^{ab}$. This lets one \emph{decide} DDH efficiently
+(compare $e(g^a,g^b)$ with $e(g,Z)$), yet \emph{computing} $g^{ab}$ remains hard.
+Hence \textbf{DDH is broken while CDH survives} --- the search/decision gap is real,
+not a missing proof.
+\end{keybox}
+
+\paragraph{Pairing-based cryptography.}
+This very gap founded an entire subfield: schemes that \emph{require} DDH to be easy (for
+functionality via the pairing) while relying on CDH-type problems (or the Bilinear
+Diffie--Hellman problem) for security. Landmark examples include one-round three-party key
+agreement (Joux), identity-based encryption (Boneh--Franklin), and short signatures
+(Boneh--Lynn--Shacham). None of this would be possible if DDH and CDH were equivalent.
+
+\subsection{The DH hardness ladder}
+
+The discrete-log problems form a ladder in which the ``easy'' (downward) direction always
+holds, while the ``hard'' (upward) direction is either open or false:
+\[
+   \ddh \reduces \cdh \reduces \dlog .
+\]
+\begin{itemize}[leftmargin=1.5em,nosep]
+  \item $\dlog\Rightarrow\cdh$ (recover the exponent, then exponentiate) --- easy.
+  \item $\cdh\Rightarrow\ddh$ (compute and compare) --- easy.
+  \item $\cdh\Rightarrow\dlog$? \textbf{Open in general} (partial results: Maurer--Wolf,
+        under auxiliary conditions).
+  \item $\ddh\Rightarrow\cdh$? \textbf{False in general} (pairing groups).
+\end{itemize}
+Analogously, whether breaking \emph{RSA} is as hard as \emph{factoring} is also open.
+
+%==========================================================
+\section{Summary}
+%==========================================================
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}p{0.34\textwidth} p{0.30\textwidth} p{0.30\textwidth}@{}}
+\toprule
+\textbf{Structural feature} & \textbf{DLOG / Diffie--Hellman} & \textbf{Lattices / LWE} \\
+\midrule
+Average-case over which object?
+  & random prime $p$ (via PNT: $\Theta(2^n/n)$ primes)
+  & random matrix $\vA$ \\
+Hardness across the family
+  & \textbf{isolated}: $\dlog(p_n)\overset{?}{\Rightarrow}\dlog(p_{n+1})$ unknown
+  & \textbf{connected}: dim-$n$ $\reduces$ dim-$m$ by embedding \\
+Random self-reducibility
+  & yes, but only \emph{within a fixed group}; no guidance on choosing $p$
+  & yes, producing genuinely uniform instances \\
+External worst-case anchor
+  & none (self-loop only)
+  & yes (Ajtai: worst-case SIVP $\reduces$ SIS/LWE) \\
+Representation dependence
+  & \textbf{yes} ($\Z_p^*\!\cong\!\Z_{p-1}$: additive DLOG trivial)
+  & no (intrinsic geometry) \\
+Search $\reduces$ decision (easy)
+  & yes ($\ddh\reduces\cdh$)
+  & yes (check the residual) \\
+Decision $\reduces$ search (hard)
+  & \textbf{false in general} (pairings: DDH easy, CDH hard)
+  & \textbf{proven} (guess-and-test with randomizer $r$) \\
+Search $\Leftrightarrow$ decision
+  & \textbf{no} (separate, strictly stronger, sometimes broken)
+  & \textbf{yes} (equivalent) \\
+Quantum status
+  & broken by Shor
+  & no known quantum speedup \\
+\bottomrule
+\end{tabular}
+\caption{Reduction structure of the two assumption families.}
+\end{table}
+
+\begin{keybox}[Takeaways]
+\begin{enumerate}[leftmargin=1.5em,nosep]
+  \item Lattice hardness is a \emph{connected, intrinsic, externally anchored} family;
+        hardness propagates from low to high dimension by an explicit embedding.
+  \item DLOG hardness is a \emph{disconnected, representation-dependent} patchwork; there is
+        no reduction across moduli, and RSR gives no guidance on choosing the group.
+  \item The average-case nature of DLOG rests on the PNT: exponentially many primes
+        (huge key space) that are polynomially dense (efficient sampling).
+  \item For LWE, \emph{search $\Leftrightarrow$ decision} is a theorem, so pseudorandomness
+        is free. For Diffie--Hellman the directions split: $\ddh\reduces\cdh$ is easy, but
+        $\ddh\Rightarrow\cdh$ is false in pairing groups --- a gap that \emph{founded}
+        pairing-based cryptography.
+\end{enumerate}
+\end{keybox}
+
+\end{document}
