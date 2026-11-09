@@ -1,4 +1,83 @@
-\section{Signatures from LWE}
-\subsection{A simple construction}
+\section{Lattice based Signature Schemes}
+In this section we will introduce post quantum secure signature schemes based on lattice assumptions. 
+When talking about lattice based signature schemes there are two core paradigms: \textit{Fiat-Shamir with abort} and \textit{Hash-and-Sign} introduced in \ref{} and \ref{}. After introducing these two paradigmes, we move on two considering two NIST candidate PQ signature schemes ML-DSA and Falcon, which  are based on these two paradigms respectively.
 
-\subsection{ML-DSA}
+\subsection{Fiat-Shamir with abort}
+Underlying ML-DSA.
+\subsection{GPV signatures \& hash-and-sign paradigm}
+One of the seminal lattice-based signature schemes is the GPV  signature scheme \cite{STOC:GenPeiVai08}, which combines the hash-and-sign paradigm with a lattice-based preimage sampleable function.
+Prior to further specifying the GPV signatures, we start with introduce the hash-and-sign paradigm, then we go into lattice trapdoors and preimage sampleable functions.
+\subsubsection{Hash-and-sign}
+At a very high level the hash-and-sign paradigm, works as follows:
+\begin{itemize}
+    \item The message to be signed, $m$, is hashed, $c=\mathcal{H}(m)$.
+    \item The signers uses their secret key to sign the hashed value $c$. \textit{In GPV signatures, as we will see, this step corresponds to using a secret trapdoor to sample a short vector \(\mathbf{s}\) such that \(\mathbf{As}= c \: \text{mod } q\).}
+    \item Anyone with the corresponding public key can check the signature by, first computing $c'=\mathcal{H}(m)$ and then check that the signature verifies against $c'$ under the public key.
+\end{itemize}
+
+\subsubsection{Lattice Trapdoors and preimage sampleable functions}
+In this section we consider a certain type of trapdoor functions that can be constructed from lattice problems, specifically we focus on \textit{short bases} lattice trapdoor functions. For a more substantial overview we refer to \cite{STOC:GenPeiVai08,peikert_dec}.
+
+Figure \ref{fig:lattice-bases} illustrate the conceptual ideal behind short bases lattice trapdoors, where we have two different basis for a lattice, one short and easy, and one long and hard. Below we explain the lattice trapdoors more formally.
+\input{figs/short-long-basis.tex}
+
+\bigskip \noindent \textit{Mathematical Background.} \\
+Let \(q\) be a positive integer, \(\mathbf A\in\ZZ_q^{n\times m}\), where \(m>n\) and \(\lattice^\bot(\mathbf{A})\) be the q-array lattice defined by the matrix \(\mathbf{A}\), as in Equation~\eqref{eq:q-array-lattice}.
+For a target vector \(\mathbf u\in\ZZ_q^n\), we additionally define the lattice coset \(\LL_\mathbf{u}^\bot\) as,
+\[
+\LL_\mathbf{u}^\bot (\mathbf{A}) := \{\mathbf x\in\ZZ^m:
+\mathbf A\mathbf x=\mathbf u \in \ZZ_q^n\}.
+\]
+
+Definition~\ref{def:ISIS} states the inhomogeneous Short Integer Solution (ISIS) problem, which is the analogue of SIS for lattice cosets. It is belived that solving the ISIS problem is hard, \ie finding a sufficiently short preimage of a given target is computationally hard for appropriate parameters.
+% assuming the hardness of 
+
+\begin{definition}[ISIS \cite{STOC:GenPeiVai08} (informal)] \label{def:ISIS}
+\textit{ISIS} asks to find a \textit{short vector}  \(\mathbf{x}\in \ZZ^m\) such that 
+\[
+\mathbf {Ax} = \mathbf{u} \: \text{ mod } q \quad \land \quad ||\mathbf{x}||\leq \beta.\]
+\end{definition}
+
+The difference between ISIS problem and the SIS problem is the target might be non-zero. However, the two problems are closely related, specifically  it holds that given two distinct solutions to specific instance of the ISIS problem, \(\mathbf{x}_1,\mathbf{x}_2\) we obtain a solution \(\mathbf{z}= \mathbf{x}_1-\mathbf{x}_2\) to the SIS with \(||\mathbf{z}||\leq 2 \beta\).
+
+\bigskip \noindent \textit{Lattice Trapdoors.} \\
+A trapdoor function is a function that is efficiency to compute but hard to invert, but can be made easy to invert with some extra information, the trapdoor. Here we consider something called short bases lattice trapdoors, which is based on observation that a lattice can be represented by different bases, which may differ significantly in the lengths and orthogonality of their basis vectors. In this setting we will denote the trapdoor to be a short basis of a lattice and the public key is the matrix defining the lattice.
+
+Let \(\mathbf{A}\) and \(\LL^\bot(\mathbf{A})\) be as above and \(\mathbf{S}\in\ZZ^{m\times m}\)
+denote a basis of the lattice. Since \(\mathbf{S}\subset \LL^\bot(\mathcal{A})\) it follows that \(\mathbf{A}\cdot \mathbf{S}= 0 \mod \: q\). The basis \(\mathbf{S}\) is defined as a trapdoor of the lattice if its vectors have norms bounded by \(\text{poly}(n,\log\: q)\). 
+
+Note, that given a uniformly random matrix \(\mathbf A\) computing a basis \(\mathbf{S}\) with short vectors as above, is computationally hard under the SIS problem. Hence, \(\mathbf{A}\) and \(\mathbf{S}\) needs to be generated together. Ajtai \cite{ICALP:Ajtai99} addressed this question and showed how to generate a random lattice from the SIS family along with a relative short basis, this procedure was later simplified by \cite{AP11,EC:MicPei12}. We state the result in Theorem~\ref{thm:compute-A-and-S}.
+\begin{theorem}[\cite{ICALP:Ajtai99,AP11,EC:MicPei12}]\label{thm:compute-A-and-S}
+    There is an efficient randomized algorithm that given positive integers, \(n,q\) and \(m \geq C \: n\: \log \: q\), for some universal constant \(C\), outputs a (nearly) uniform random matrix \(\mathbf{A}\in\Zq^{n\times m}\) specifying the integer lattice \(\LL^\bot(\mathbf{A})\) along with the basis \(\mathbf{S}\in\ZZ^{m \times m}\) of \(\LL\) whose vectors have norms bounded by \(\text{poly}(n,\log\: q)\).
+\end{theorem}
+
+In the following section we assume \(||\mathbf{S}||\leq \beta\) for some \(\beta>0\).
+
+\bigskip \noindent \textit{Discrete Gaussian Sampling and Lattice based PSFs.} \\
+%Gentry \etal proved Theorem~\ref{thm:gaussian} in \cite{STOC:GenPeiVai08}. 
+Given a lattice \(\lattice:=\lattice(\mathbf{A})\) and the corresponding trapdoor \(\mathbf{S}\), Theorem~\ref{thm:gaussian} implies that whoever knows the trapdoor can efficiently sample \(\vx\) such that \(||\vx||\leq \beta \sqrt{\log \: O(n/\epsilon)} \), while given merely \(\lattice^\bot(\mathbf{A})\) this cannot be done efficiently, as it would imply a solution ISIS problem. 
+This is the conceptual idea behind the lattice preimage sampleable functions (PSF) used in GPV signatures, for further details we refer the reader to \cite{STOC:GenPeiVai08,peikert_dec}.
+%\[||\vx|| \leq ||\td_A||\cdot \sqrt{\log \: O(n/\epsilon)}\]
+\begin{theorem}[\cite{STOC:GenPeiVai08,peikert_dec}]\label{thm:gaussian}
+    There is a randomized polynomial-time algorithm that given any basis \(\mathbf{S}\) of a lattice $\mathcal{L}=\mathcal{L}(\mathbf{S})\subset \mathbb{R}^n$, any coset \(\mathbf{c}+\mathcal{L}\) and any Gaussian parameter \(s\geq ||\mathbf{S}||\cdot \sqrt{\log \: O(n/\epsilon)}\), outputs a sample \(\mathbf{x}\), such that \(\mathbf{x}\) has a distribution that is within statistical distance \(\epsilon\) of the discrete Gaussian \(D_{\mathbf{c}+\mathcal{L},s}\).
+\end{theorem}
+
+An important property of Gaussian sampling is that the resulting distribution is statistically close to a discrete Gaussian distribution that is independent of the short basis \(\mathbf{S}\) used by the sampling algorithm. Consequently, the distribution of these preimages leaks, essentially, no information about the short basis that enabled the efficient sampling of short preimages.
+This property is crucial for the security of GPV signatures, where an adversary that observes multiple signatures generated using the same trapdoor \(\mathbf{S}\) should not be able to learn anything about the basis \(\mathbf{S}\).
+
+\subsubsection{GPV Signatures}
+In this section we finally define the GPV signatures.
+\begin{description}
+    \item[Keys:] The public key is the matrix \(\mathbf{A}\) and the secret key is the short basis \(\mathbf{S}\) of the lattice \(\LL^\bot(\mathbf{A})\). By theorem~\ref{thm:compute-A-and-S} this can be done efficiently. Intuitively, one can think of the trapdoor to be the is short lattice base on the left in Figure~\ref{fig:lattice-bases}.
+    \item[Sign:] Hash the message to a vector \(\mathbf{y}\in\Zq^n\) that specifies the lattice coset \(\LL_{\mathbf{y}}^\bot\). Use the trapdoor, \ie the short basis \(\mathbf{S}\), to sample a signature \(\mathbf{x} \gets D_{\mathbf{y}+\mathcal{L},s}\). This can be done efficiency by Theorem \ref{thm:gaussian}.
+    \item[Verify:] To verify the signature \(\vx\) if a message. Hash the message to obtain the coset \(\mathbf{y}+\LL\). Accept the signature if \(\vx\in\LL^{\bot}_\mathbf{y}\) and \(||\vx||\leq B\) for \(B\in\mathcal{O}(s\sqrt{m})\). Note that checking \(\vx\in\LL^{\bot}_\mathbf{y}\) is equivalent to checking that \(\mathbf{Ax} = \mathbf{y} \: \mod \: q\).
+\end{description}
+
+\subsection{ML-DSA (CRYSTALS-Dilithium)}
+The module-lattice-based Digital signature algorithm (ML-DSA),
+Fiat-Sahmir with aborts, module lattice.
+
+\subsection{Falcon}
+Another prominent lattice-based signature scheme is Falcon~\cite{Falcon}, for which we provide only a brief overview. Falcon follows the hash-and-sign paradigm and is constructed using NTRU lattices~\cite{HPS98}. To generate signatures, Falcon employs a trapdoor sampling algorithm known as fast Fourier sampling~\cite{EPRINT:DucPre15b}. Its security relies on the hardness of finding short vectors in NTRU lattices, commonly formulated as the NTRU-SIS problem.
+
+We refer the interested reader to~\cite{Falcon} for further details on the construction\footnote{We have to draw the line somewhere on what to include in this handout.}.
