@@ -25,7 +25,7 @@ Date | Who | Topic (the current order is only a suggestion) | Handout
 ---|---|---|---
 **19/11** | E + H + T | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
 **TBD** | TBD | ~~Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS~~ | TBD
-**14/11** | A + E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
+**14/12** | A + E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
 **mid/end Jan** | L + S | Isogeny-based cryptography after SIDH/SIKE | TBD
 **March 2027** | L + H | Multivariate cryptography | TBD
 **not Jan** | A + T | Quantum algorithms for attacking cryptography | TBD
