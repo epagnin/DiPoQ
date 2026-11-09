@@ -1,0 +1,58 @@
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        scale=0.85,
+        latticepoint/.style={circle, fill=black!55,
+                             inner sep=1.2pt},
+        basis/.style={-{Stealth[length=2.5mm]},
+                      line width=1.2pt}
+    ]
+
+    % Short basis
+    \begin{scope}
+        % Lattice points
+        \foreach \i in {-3,...,3} {
+            \foreach \j in {-3,...,3} {
+                \node[latticepoint] at
+                    ({\i+0.35*\j},{\j}) {};
+            }
+        }
+
+        % Basis vectors
+        \draw[basis, teal!80!black]
+            (0,0) -- (1,0);
+        \draw[basis, teal!80!black]
+            (0,0) -- (0.35,1);
+
+        \node[below] at (0,-3.65)
+            {\textbf{Short basis}};
+    \end{scope}
+
+    % Long basis
+    \begin{scope}[xshift=8cm]
+        % Identical lattice points
+        \foreach \i in {-3,...,3} {
+            \foreach \j in {-3,...,3} {
+                \node[latticepoint] at
+                    ({\i+0.35*\j},{\j}) {};
+            }
+        }
+
+        % Long basis vectors
+        % b1 = 3v1 + 2v2
+        % b2 = 2v1 + v2
+        \draw[basis, orange!85!black]
+            (0,0) -- (3.7,2);
+        \draw[basis, orange!85!black]
+            (0,0) -- (2.35,1);
+
+        \node[below] at (0,-3.65)
+            {\textbf{Long basis}};
+    \end{scope}
+
+    \end{tikzpicture}
+    \caption{Two different bases of the same lattice.
+    A short  \textit{easy} basis (left) and a long \textit{hard}
+basis (right).}
+    \label{fig:lattice-bases}
+\end{figure}
