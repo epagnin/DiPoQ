@@ -27,14 +27,15 @@ Due to the large body of work on LBC, I suggest 3 people there, and to compensat
 
 Date | Who | Topic (the current order is only a suggestion) | Handout
 ---|---|---|---
-**19 Nov** | E + H + T | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
+**19 Nov 14:45-16:45** | E + H + T | Lattice-based cryptography: ML-KEM / Kyber, ML-DSA / Dilithium, Falcon / FN-DSA | TBD
 **TBD** | TBD | ~~Hash-based post-quantum cryptography: SLH-DSA / SPHINCS+, XMSS, LMS~~ | TBD
-**14 Dec** | A + E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
-**12 Jan** | L + S | Isogeny-based cryptography after SIDH/SIKE | TBD
+**14 Dec 14:00-16:00** | A + E | Code-based cryptography: Classic McEliece, BIKE, HQC | TBD
+**12 Jan 13:00-15:00** | L + S | Isogeny-based cryptography after SIDH/SIKE | TBD
 **March 2027** | L + H | Multivariate cryptography | TBD
 **not Jan** | A + T | Quantum algorithms for attacking cryptography | TBD
 **TBD** | TBD | ~~Other: e.g., post-quantum signatures from MPC-in-the-head, information-theoretic constructions~~ | TBD
 **TBD** | TBD | ~~Crypto-agility, hybrid solutions, and migration to post-quantum cryptography~~ | TBD
+**TBD** | Leonardo + friends | VOLE and MPC | TBD
 
 
 ## Handout Requirements
