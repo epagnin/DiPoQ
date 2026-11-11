@@ -1,4 +1,6 @@
 \section{Lattice Problems}\label{sec:LP}
+We discuss the computational problems that are cryptographically useful. We begin by introducing Learning With Errors and its structured variants, followed by a discussion about Short Integer Solutions and its structured variants.
+
 \subsection{Learning With Errors (LWE)}
 The Learning With Errors assumption can be summarised as ``it is hard to solve systems of linear equations with noise''. It was introduced by Regev in 2005 \cite{reg05}. We begin with providing some intuition on the problem, before proceeding to formal definitions and hardness results. The exposition here is mainly based on \cite{peikert_dec} and \cite{cryptoeprint:2021/1358}.
 
@@ -23,12 +25,12 @@ The core idea of LWE-based cryptographic primitives is to publish $(\vv A, \vv b
 \subsubsection{The LWE Problems}
 We formally define LWE and the associated computational problems.
 \begin{definition}[LWE sample, as presented in \cite{peikert_dec}]
-    Given a secret $\vv s \in \ZZ^\nd_q$, and an error distribution $\chi$, an LWE sample over $\ZZ_q^\nd \times \ZZ$ is constructed by picking $a \randfrom \ZZ_q^\nd$ and $e \leftarrow \chi$ and outputting
+    Given a secret $\vv s \in \ZZ^\nd_q$, and an error distribution $\chi$, an LWE sample over $\ZZ_q^\nd \times \ZZ$ is constructed by picking $a \randfrom \ZZ_q^\nd$, $e \leftarrow \chi$ and outputting
     \[ (\vv a, b = \langle \vv s, \vv a \rangle + e \nmod q). \]
 \end{definition}
 It is customary to collect multiple LWE samples in a matrix as discussed above. Given $m$ samples $(\vv a_i, b_i)$, we collect the $\vv a_i$ in a matrix $\vv A \in \Zq^{m \times \nd}$ and the right hand sides $b_i$ (and errors $e_i$) in a vector $\vv b \in \Zq^m$ (with $\vv e \leftarrow \chi^m$) so that $\vv A \vv s + \vv e = \vv b$.
 
-The LWE problem comes as a search and as a decision problem. The search problem asks for the secret $\vv s$ given many LWE samples, while the decision problem asks to distinguish between many LWE samples and uniform samples. The formal definitions are given below.
+The LWE problem comes as search and decision variants. The search problem asks for the secret $\vv s$ given many LWE samples, while the decision problem asks to distinguish between many LWE samples and uniform samples. The formal definitions are given below.
 
 \begin{definition}[Search LWE$_{\nd, q, \chi, m}$, as presented in \cite{peikert_dec}]
     Given $m$ independent LWE samples $(\vv a_i, b_i) \in \ZZ_q^\nd \times \Zq$ for a uniformly random $\vv s \in \Zq^\nd$, determine $\vv s$.
@@ -36,7 +38,7 @@ The LWE problem comes as a search and as a decision problem. The search problem 
 
 With the samples collected in a matrix, the search LWE problem can be seen as an average-case BDD problem on the lattice
 \[ \LL(\vv A) = \{ \vv A^T \vv s : \vv s \in \Zq^\nd \} + q \ZZ^m. \]
-The right hand side $\vv b$ is close to exactly one vector in this lattice, and the problem is to find it. We call this lattice the LWE lattice. The lattice has a special structure, namely that $q \ZZ \subseteq \LL$, which is called a $q$-ary lattice.
+The right hand side $\vv b$ is close to exactly one vector in this lattice, and the problem is to find it. We call this lattice the \textit{LWE lattice}. It has a special structure, namely that $q \ZZ \subseteq \LL$, which is called a $q$-ary lattice.
 
 \begin{definition}[Decision LWE$_{\nd, q, \chi, m}$, as presented in \cite{peikert_dec}]
     Given $m$ independent samples where every samples is either (i) an LWE sample for a uniform $\vv s \in \Zq^\nd$ or (ii) a uniform sample, distinguish which is the case.
@@ -45,7 +47,7 @@ The right hand side $\vv b$ is close to exactly one vector in this lattice, and 
 The search and decision LWE problems are equivalent in that there exists a reduction from decision LWE to search LWE, due to Regev. An efficient distinguisher for LWE also gives a polynomial-time algorithm for solving search LWE. Due to this fact, we simply refer to the ``LWE problem'' as whichever variant is most convenient.
 
 \subsubsection{Hardness of LWE}
-The main hardness result of LWE is the theorem below and is due to Regev. The theorem constructs a quantum reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ in the worst case to decision LWE. In other words, if an efficient distinguisher for LWE existed, it would yield a polynomial-time quantum algorithm for solving any instance GapSVP$_\gamma$ and SIVP$_\gamma$. As mentioned previously, no such algorithm for polynomial-size approximation factors $\gamma$ is known at the time of writing.
+The main hardness result of LWE is the theorem below and is due to Regev. The theorem constructs a quantum reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ in the worst case to decision LWE. In other words, if an efficient distinguisher for LWE existed, it would yield a polynomial-time quantum algorithm for solving any instance of GapSVP$_\gamma$ and SIVP$_\gamma$. As mentioned previously, no such algorithm for polynomial-size approximation factors $\gamma$ is known at the time of writing.
 
 \begin{theorem}[LWE main theorem, as presented in \cite{peikert_dec}]
     For any number $m = \poly(\nd)$ of LWE samples, any prime $q \leq 2^{\poly(\nd)}$ and any discrete Gaussian distribution $\chi_\alpha$ with $\alpha q > 2 \sqrt{\nd}$ and $0 < \alpha < 1$, if there exists an efficient algorithm that solves the decision LWE problem over the given parameters, then there exists an efficient quantum algorithm that solves GapSVP$_\gamma$ and SIVP$_\gamma$ for $\gamma = \tilde{O}(\nd/\alpha)$ on $\nd$-dimensional lattices.
@@ -54,7 +56,7 @@ The main hardness result of LWE is the theorem below and is due to Regev. The th
 This theorem is the reason that LWE is one of the most robust assumptions for lattice-based cryptography. However, a still unsolved problem is finding a fully classical tight reduction. 
 
 \subsection{Ring-LWE}
-Lyabashevsky, Peikert and Regev (LPR) introduced a structured variant of LWE, called Ring-LWE, in 2010 \cite{lpr10}. We build on the discussion on LWE to introduce ring-LWE. The exposition is mainly based on \cite{peikert_dec}. The structure of Ring-LWE allows for speedups because ring multiplications replace the generic matrix-vector multiplications in LWE. Ring multiplication can be performed in quasi-linear time using FFT-like techniques (such as Number Theoretic Transform (NTT)). Ring-LWE is parametrised over a ring $R$ of degree $\nd$ over $\ZZ$ and a modulus $q$, together with an error distribution $\chi$ over $R$. The primary working environment is the quotient ring $R_q = R/qR$. The ring $R$ is typically a cyclotomic ring $R = \ZZ[x]/(x^\nd + 1)$ for $\nd$ a power of two and the error distirbution is typically a discrete Gaussian in the canonical embedding of $R$ with an error rate $\alpha < 1$ relative to $q$.
+Lyabashevsky, Peikert and Regev (LPR) introduced a structured variant of LWE, called Ring-LWE, in 2010 \cite{lpr10}. We build on the discussion on LWE to introduce ring-LWE. The exposition is mainly based on \cite{peikert_dec}. The structure introduced in Ring-LWE allows for speedups because ring multiplications replace the generic matrix-vector multiplications in LWE. Ring multiplication can be performed in quasi-linear time using FFT-like techniques (such as Number Theoretic Transform (NTT)). Ring-LWE is parametrised over a ring $R$ of degree $\nd$ over $\ZZ$ and a modulus $q$, together with an error distribution $\chi$ over $R$. The primary working environment is the quotient ring $R_q = R/qR$. The ring $R$ is typically a cyclotomic ring $R = \ZZ[x]/(x^\nd + 1)$ for $\nd$ a power of two and the error distirbution is typically a discrete Gaussian in the canonical embedding (see below) of $R$ with an error rate $\alpha < 1$ relative to $q$.
 
 \begin{definition}[Ring-LWE sample, as presented in \cite{peikert_dec}]
     Given a secret $s \in R_q$ and an error distribution $\chi$ over $R$, a Ring-LWE sample over $R_q \times R_q$ is constructed by picking $a \randfrom R_q$ and $e \leftarrow \chi$ and outputting \[ (a, b = s \cdot a + e \nmod q). \]
@@ -62,21 +64,21 @@ Lyabashevsky, Peikert and Regev (LPR) introduced a structured variant of LWE, ca
 
 Again, without the error, $s$ can be computed as $s = b \cdot a^{-1}$ if $a_i$ is invertible, which means the error hides the secret. The ring-LWE decision problem is the following.
 
-\begin{definition}[Decision Ring-LWE, as presented in \cite{peikert_dec}]
+\begin{definition}[Decision Ring-LWE$_{R, q, \chi, m}$, as presented in \cite{peikert_dec}]
     Given $m$ independent samples $(a_i, b_i) \in R_q \times R_q$ where every sample is either (i) a Ring-LWE sample for a uniform $s \in R_q$ or (ii) a uniform sample, distinguish which is the case.
 \end{definition}
 
 Ring-LWE is a special case of LWE. We compare ring-LWE to LWE here.
 \begin{itemize}
-    \item A single ring-LWE sample where $a_i$ is uniformly sample is the ring analogue of $\nd$ LWE samples where $\vv a_i \in \Zq^\nd$ is randomly sampled. One can view a ring-LWE sample as a set of $\nd$ correlated LWE samples.
+    \item A single ring-LWE sample where $a_i$ is uniformly sampled is the ring analogue of $\nd$ LWE samples where $\vv a_i \in \Zq^\nd$ is uniformly sampled. One can view a ring-LWE sample as a set of $\nd$ correlated LWE samples.
     \item In LWE, the secret $\vv s$ and $\vv a$ are elements of $\Zq^\nd$, which is a $\ZZ$-module, and the multiplication operation is an inner product. In ring-LWE, the secret $s$ and $a$ are elements of $R_q$, which is an $R$-module, and the multiplication operation is standard polynomial multiplication.
-    \item Because the constituents of an ring-LWE sample are polynomials, we are free to select a representation (embedding) of them. The two most popular choices are \textit{cofficient embedding}, where the polynomial is represented as a vector of its coefficients, and \textit{canonical embedding}, which maps a ring element $z$ to a vector $(z(\alpha_i))_i \in \mathbb{C}^\nd$, where $\alpha_i$ are the complex roots of $x^\nd + 1$ (the polynomial we are operating modulo). While the coefficient embedding is intuitive and popular to work with when performing reduction attacks, the canonical embedding has proven more useful in proofs since norms are better behaved under different operations.
+    \item Because the constituents of an ring-LWE sample are polynomials, we are free to select a representation (embedding) of them. The two most popular choices are \textit{cofficient embedding}, where the polynomial is represented as a vector of its coefficients, and \textit{canonical embedding}, which maps a ring element $z$ to a vector $(z(\alpha_i))_i \in \mathbb{C}^\nd$, where $\alpha_i$ are the complex roots of $x^\nd + 1$ (the polynomial we are operating modulo). While the coefficient embedding is intuitive and popular to work with when performing reduction attacks, the canonical embedding has proven more useful in proofs since norms are better behaved under transformations.
     \item The algebraic structure of the problem carries over to the corresponding ring-LWE lattice. The quotient ring $R_q$ (which in abstract algebra terms is a fractional ideal), when endowed with an embedding, \textit{is} a lattice. These so-called \textit{ideal lattices} possess geometric symmetries (for example cyclicity) not present in random lattices. It was believed that these symmetries might allow for faster attacks on ring-LWE compared to LWE, but no such gain is known at the time of writing.
 \end{itemize}
 
 A hardness result similar to that of LWE holds for Ring-LWE, due to LPR.
 \begin{theorem}[Ring-LWE main theorem, as presented in \cite{peikert_dec}]
-    For any number $m = \poly(\nd)$, cyclotomic ring $R$ over $\ZZ$ of degree $\nd$ and appropriate choices of $q$ and $\chi$ of error rate $\alpha < 1$, solving the Ring-LWE problem is at least as hard as solving SVP$_\gamma$ quantumly on arbitrary ideal lattices in $R$, for some $\gamma = \poly(\nd)/\alpha$.
+    For any number $m = \poly(\nd)$ of samples, cyclotomic ring $R$ over $\ZZ$ of degree $\nd$ and appropriate choices of $q$ and $\chi$ with error rate $\alpha < 1$, solving the Ring-LWE problem is at least as hard as solving SVP$_\gamma$ quantumly on arbitrary ideal lattices in $R$, for some $\gamma = \poly(\nd)/\alpha$.
 \end{theorem}
 
 \subsection{Module-LWE}
@@ -113,11 +115,11 @@ Similarly to the intuition for LWE, this problem is easy to solve using Gaussian
 
 SIS is an average case (approximate) shortest vector problem on the lattices
 \begin{align}\label{eq:q-array-lattice}
-    \LL^\bot(\vv A) = \{ \vv z \in \ZZ^m : \vv A \vv z = 0 \in \ZZ_q^\nd \},
+    \LL^\bot(\vv A) = \{ \vv z \in \ZZ^m : \vv A \vv z = \vv 0 \in \ZZ_q^\nd \},
 \end{align}
 which is also a $q$-ary lattice. In fact, $\LL^\bot(\vv A)$ is the \textit{dual} (up to scaling factor) of the LWE lattice $\LL(\vv A)$, formally $\LL(\vv A) = q \LL^\bot(\vv A)^*$.
 
-A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. This means SIS and LWE are reducible to each other. The interested reader is referred to \cite{peikert_dec,cryptoeprint:2021/1358,ajt96}.
+A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. In fact, SIS and LWE are reducible to each other. The interested reader is referred to \cite{peikert_dec,cryptoeprint:2021/1358,ajt96}.
 
 \subsubsection{Module-SIS}
 Langlois and Stehlé \cite{ls15} also introduced a variant of SIS over modules called Module-SIS (MSIS). We give the definition of the problem. The ring $R$ below is normally the same as in Ring-LWE: a cyclotomic ring $R = \ZZ [x] / (x^n + 1)$ for $n$ a power of two, however other rings such as $R = \ZZ [x] /(x^n -1)$ for $n$ prime have also been studied.

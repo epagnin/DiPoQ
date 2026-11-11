@@ -45,7 +45,7 @@ Another promise problem is the following, in which we are promised that there ex
     Given a basis $\vv{B}$ of an $\nd$-dimensional lattice $\LL(\vv{B})$ and a target point $\vv t \in \RR^\nd$ such that $\mathrm{dist}(\vv t, \LL) < d = \lambda_1(\LL)/(2 \gamma(\nd))$, find the unique lattice vector $\vv v \in \LL$ closest to the target point $\vv t$, i.e. such that $|| \vv t - \vv v || < d$.
 \end{definition}
 
-$\gamma$-BDD is actually a relaxation of the $\gamma$-Closest Vector Problem ($\gamma$-CVP), where the promised existence of a lattice point is removed. It is intuitively clear that $\gamma$-BDD is easier than $\gamma$-CVP. CVP is perhaps the second most studied computational lattice problem with a plethora of hardness results. Still however, there is no cryptographic assumption that reduces to CVP at the time of writing. 
+$\gamma$-BDD is actually a relaxation of the $\gamma$-Closest Vector Problem ($\gamma$-CVP), in which the promised existence of a lattice point is removed. It is intuitively clear that $\gamma$-BDD is easier than $\gamma$-CVP. CVP is perhaps the second most studied computational lattice problem with a plethora of hardness results. Still however, there is no cryptographic assumption that reduces to CVP at the time of writing. 
 
 The above problems are normally hard to solve given a random basis but significantly easier to solve (or trivially solved) given a basis of short and close to orthogonal basis vectors. The computational problems above are therefore usually solved using \textit{reduction algorithms}, which turns a ``bad'' basis (containing long and non-orthogonal basis vectors) into a good one. Despite extensive study for several decades, the problems appear to be intractable. There exist polynomial-time algorithms for solving instances with approximation factors $\gamma = 2^{\Theta(\nd \log \log \nd / \log \nd)}$ that are slightly sub-exponential, such as LLL (due to Lenstra, Lenstra and Lovász) and derivatives. For smaller (i.e. polynomial) approximation factors, the algorithms have at least exponential time and/or space complexity. Importantly, this is also the state for quantum algorithms, which only offer a modest speedup over classical ones.
 
@@ -59,7 +59,7 @@ Lattice-based cryptographic constructions often make use of probability distribu
 \end{definition}
 
 \begin{definition}[Gaussian distribution]
-    The (spherical) Gaussian distribution $D_s$ with parameters $s$ over $\RR^\nd$ is given by a probability density function that is the Gaussian function normalised over $\RR^\nd$
+    The (spherical) Gaussian distribution $D_s$ with parameters $s$ over $\RR^\nd$ is given by a probability density function $f(\vv x)$ that is the Gaussian function normalised over $\RR^\nd$:
     \[ f(\vv x) = \frac{\rho_s(\vv x)}{\int_{\RR^\nd} \rho_s(x) d \vv x} = \frac{\rho_s(\vv x)}{s^\nd}. \]
 \end{definition}
 

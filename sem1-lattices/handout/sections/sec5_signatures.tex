@@ -1,6 +1,6 @@
 \section{Lattice based Signature Schemes}\label{sec:sig}
 In this section we will introduce post quantum secure signature schemes based on lattice assumptions. 
-When talking about lattice based signature schemes there are two core paradigms: \textit{Fiat-Shamir with abort} and \textit{Hash-and-Sign} introduced in \ref{} and \ref{}. After introducing these two paradigmes, we move on two considering two NIST candidate PQ signature schemes ML-DSA and Falcon, which  are based on these two paradigms respectively.
+When talking about lattice based signature schemes there are two core paradigms: \textit{Fiat-Shamir with abort} and \textit{Hash-and-Sign} introduced in \ref{} and \ref{}. After introducing these two paradigms, we move on two considering two NIST candidate PQ signature schemes ML-DSA and Falcon, which  are based on these two paradigms respectively.
 
 \subsection{Hash-and-sign paradigm \& Signatures with Trapdoor Sampling}
 One of the seminal lattice-based signature schemes is the GPV  signature scheme \cite{STOC:GenPeiVai08}, which combines the hash-and-sign paradigm with a lattice-based preimage sampleable function.
@@ -14,13 +14,13 @@ At a very high level the hash-and-sign paradigm, works as follows:
 \end{itemize}
 
 \subsubsection{Lattice Trapdoors and preimage sampleable functions}
-In this section we consider a certain type of trapdoor functions that can be constructed from lattice problems, specifically we focus on \textit{short bases} lattice trapdoor functions. For a more substantial overview we refer to \cite{STOC:GenPeiVai08,peikert_dec}.
+In this section we consider a certain type of trapdoor functions that can be constructed from lattice problems, specifically we focus on \textit{short basis} lattice trapdoor functions. For a more substantial overview we refer to \cite{STOC:GenPeiVai08,peikert_dec}.
 
-Figure \ref{fig:lattice-bases} illustrate the conceptual ideal behind short bases lattice trapdoors, where we have two different basis for a lattice, one short and easy, and one long and hard. Below we explain the lattice trapdoors more formally.
+Figure \ref{fig:lattice-bases} illustrate the conceptual ideal behind short basis lattice trapdoors, where we have two different basis for a lattice, one short and easy, and one long and hard. Below we explain the lattice trapdoors more formally.
 \input{figs/short-long-basis.tex}
 
-\bigskip \noindent \textit{Mathematical Background.} \\
-Let \(q\) be a positive integer, \(\mathbf A\in\ZZ_q^{n\times m}\), where \(m>n\) and \(\lattice^\bot(\mathbf{A})\) be the q-array lattice defined by the matrix \(\mathbf{A}\), as in Equation~\eqref{eq:q-array-lattice}.
+\bigskip \noindent \textit{Mathematical Background.} \\ % I think we should use \paragraph{} for homogeneity / Emil
+Let \(q\) be a positive integer, \(\mathbf A\in\ZZ_q^{n\times m}\), where \(m>n\) and \(\lattice^\bot(\mathbf{A})\) be the $q$-ary lattice defined by the matrix \(\mathbf{A}\), as in Equation~\eqref{eq:q-array-lattice}.
 For a target vector \(\mathbf u\in\ZZ_q^n\), we additionally define the lattice coset \(\LL_\mathbf{u}^\bot\) as,
 \[
 \LL_\mathbf{u}^\bot (\mathbf{A}) := \{\mathbf x\in\ZZ^m:
@@ -39,7 +39,7 @@ Definition~\ref{def:ISIS} states the inhomogeneous Short Integer Solution (ISIS)
 The difference between ISIS problem and the SIS problem is the target might be non-zero. However, the two problems are closely related, specifically  it holds that given two distinct solutions to specific instance of the ISIS problem, \(\mathbf{x}_1,\mathbf{x}_2\) we obtain a solution \(\mathbf{z}= \mathbf{x}_1-\mathbf{x}_2\) to the SIS with \(||\mathbf{z}||\leq 2 \beta\).
 
 \bigskip \noindent \textit{Lattice Trapdoors.} \\
-A trapdoor function is a function that is efficiency to compute but hard to invert, but can be made easy to invert with some extra information, the trapdoor. Here we consider something called short bases lattice trapdoors, which is based on observation that a lattice can be represented by different bases, which may differ significantly in the lengths and orthogonality of their basis vectors. In this setting we will denote the trapdoor to be a short basis of a lattice and the public key is the matrix defining the lattice.
+A trapdoor function is a function that is efficient to compute but hard to invert, but can be made easy to invert with some extra information, the trapdoor. Here we consider something called short bases lattice trapdoors, which is based on observation that a lattice can be represented by different bases, which may differ significantly in the lengths and orthogonality of their basis vectors. In this setting we will denote the trapdoor to be a short basis of a lattice and the public key is the matrix defining the lattice.
 
 Let \(\mathbf{A}\) and \(\LL^\bot(\mathbf{A})\) be as above and \(\mathbf{S}\in\ZZ^{m\times m}\)
 denote a basis of the lattice. Since \(\mathbf{S}\subset \LL^\bot(\mathcal{A})\) it follows that \(\mathbf{A}\cdot \mathbf{S}= 0 \mod \: q\). The basis \(\mathbf{S}\) is defined as a trapdoor of the lattice if its vectors have norms bounded by \(\text{poly}(n,\log\: q)\). 
