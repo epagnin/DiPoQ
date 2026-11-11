@@ -1,9 +1,16 @@
-\section{Further topics}\label{sec:further}
+\section{Epilogue: The Lattice Situation}\label{sec:further}
+In this text, we have covered the two main lattice-based assumptions used in cryptography, and shown how they can be used to build encryption and signatures. Lattice-based cryptography, however, is a rich and complex ecosystem of alternative assumptions, some of which reduce to LWE/SIS, and some of which don't. An overview of the situation can be found in Figure~\ref{fig:zoo}.
+\begin{figure}[h]
+    \includegraphics[width = \textwidth]{figs/assumption.png}
+    \caption{Screenshot from \url{latticeassumptionzoo.org/graph}.}
+    \label{fig:zoo}
+\end{figure}
 
-\subsection{Attacks}
+We give a few notable highlights.
+\begin{itemize}
+    \item[] \textbf{NTRU:} which was published in 1998, before LWE. The original paper proposed an encryption scheme, simply called NTRU at the time and later renamed NTRUEncrypt, but NTRU has also been used for Falcon as mentioned above. The NTRU assumption never saw the fame of LWE, but remains unbroken for standard parameters as of writing.
+    \item[] \textbf{Learning Parity with Noise (LPN):} which is closely related to code-based cryptography. The LPN problem amounts to decoding random linear codes. While the worst case of the decoding problem is known to be NP-complete, no such hardness is known for the average case. LPN can be seen as a special case of LWE with $q = 2$ and Bernoulli noise, although the worst-case-to-average-case reductions supporting LWE do not carry over.
+    \item[] \textbf{Lattice Isomorphism Problem (LIP):} which asks whether two lattices are isomorphic. The problem can be seen as a lattice analogue of isogeny-based cryptography, in which an elliptic curve is hidden by applying (a generalisation of) an isomorphism.
+\end{itemize}
 
-\subsection{PRFs from LWE}
-
-\subsection{LPN and pseudorandom codes}
-
-\subsection{The assumption situation}
+One should be mindful that LWE/SIS are not the only assumptions around, and that while reductions exist, one cannot take all LWE/SIS variants to be equivalent. Neither are all assumptions equally well studied, and may have weaknesses. In other words: \textit{When working with alternative assumptions in lattices, be careful, there may be dragons.}
