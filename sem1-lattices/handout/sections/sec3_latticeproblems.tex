@@ -1,4 +1,4 @@
-\section{Lattice problems}\label{sec:LP}
+\section{Lattice Problems}\label{sec:LP}
 \subsection{Learning With Errors (LWE)}
 The Learning With Errors assumption can be summarised as ``it is hard to solve systems of linear equations with noise''. It was introduced by Regev in 2005 \cite{reg05}. We begin with providing some intuition on the problem, before proceeding to formal definitions and hardness results. The exposition here is mainly based on \cite{peikert_dec} and \cite{cryptoeprint:2021/1358}.
 
@@ -20,7 +20,7 @@ Consider the following example.
 
 The core idea of LWE-based cryptographic primitives is to publish $(\vv A, \vv b)$ as a public key, while keeping $\vv s$ secret. For security, the error distribution $\chi$ must be sufficiently large to hide the structure in the system of equations. At the same time, correctness of the cryptosystem demands that the errors cannot be too large, since that would completely remove the structure and turn the equations into random noise. Hardness results state that if the error is selected correctly, noisy linear equations $\vv A \vv s + \vv e = \vv b$ become indistinguishable from randomly sampling $\vv b$ directly, while the structure of the equation $\vv A \vv s \approx \vv b$ is preserved. In this sweet spot, we can build cryptography.
 
-\subsubsection{The LWE problems}
+\subsubsection{The LWE Problems}
 We formally define LWE and the associated computational problems.
 \begin{definition}[LWE sample, as presented in \cite{peikert_dec}]
     Given a secret $\vv s \in \ZZ^\nd_q$, and an error distribution $\chi$, an LWE sample over $\ZZ_q^\nd \times \ZZ$ is constructed by picking $a \randfrom \ZZ_q^\nd$ and $e \leftarrow \chi$ and outputting

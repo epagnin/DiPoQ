@@ -268,3 +268,56 @@ isbn="978-3-642-38348-9"
   year = 2012,
   doi = "10.1007/978-3-642-29011-4_41",
 }
+
+@INPROCEEDINGS{imp95,
+  author={Impagliazzo, R.},
+  booktitle={Proceedings of Structure in Complexity Theory. Tenth Annual IEEE Conference}, 
+  title={A personal view of average-case complexity}, 
+  year={1995},
+  volume={},
+  number={},
+  pages={134-147},
+  keywords={Computer science;Drives;Distributed computing;Cryptography;Complexity theory;Bibliographies},
+  doi={10.1109/SCT.1995.514853}}
+
+@inproceedings{Gen09,
+author = {Gentry, Craig},
+title = {Fully homomorphic encryption using ideal lattices},
+year = {2009},
+isbn = {9781605585062},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1536414.1536440},
+doi = {10.1145/1536414.1536440},
+abstract = {We propose a fully homomorphic encryption scheme -- i.e., a scheme that allows one to evaluate circuits over encrypted data without being able to decrypt. Our solution comes in three steps. First, we provide a general result -- that, to construct an encryption scheme that permits evaluation of arbitrary circuits, it suffices to construct an encryption scheme that can evaluate (slightly augmented versions of) its own decryption circuit; we call a scheme that can evaluate its (augmented) decryption circuit bootstrappable.Next, we describe a public key encryption scheme using ideal lattices that is almost bootstrappable.Lattice-based cryptosystems typically have decryption algorithms with low circuit complexity, often dominated by an inner product computation that is in NC1. Also, ideal lattices provide both additive and multiplicative homomorphisms (modulo a public-key ideal in a polynomial ring that is represented as a lattice), as needed to evaluate general circuits.Unfortunately, our initial scheme is not quite bootstrappable -- i.e., the depth that the scheme can correctly evaluate can be logarithmic in the lattice dimension, just like the depth of the decryption circuit, but the latter is greater than the former. In the final step, we show how to modify the scheme to reduce the depth of the decryption circuit, and thereby obtain a bootstrappable encryption scheme, without reducing the depth that the scheme can evaluate. Abstractly, we accomplish this by enabling the encrypter to start the decryption process, leaving less work for the decrypter, much like the server leaves less work for the decrypter in a server-aided cryptosystem.},
+booktitle = {Proceedings of the Forty-First Annual ACM Symposium on Theory of Computing},
+pages = {169–178},
+numpages = {10},
+keywords = {fully homomorphic encryption},
+location = {Bethesda, MD, USA},
+series = {STOC '09}
+}
+
+@inproceedings{ajt96,
+author = {Ajtai, M.},
+title = {Generating hard instances of lattice problems (extended abstract)},
+year = {1996},
+isbn = {0897917855},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/237814.237838},
+doi = {10.1145/237814.237838},
+booktitle = {Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing},
+pages = {99–108},
+numpages = {10},
+location = {Philadelphia, Pennsylvania, USA},
+series = {STOC '96}
+}
+
+@book{mg02,
+  author = {Micciancio, Daniele and Goldwasser, Shafi},
+  doi = {https://doi.org/10.1007/978-1-4615-0897-7},
+  publisher = {Springer New York, NY},
+  title = {Complexity of Lattice Problems},
+  year = {2002}
+}
