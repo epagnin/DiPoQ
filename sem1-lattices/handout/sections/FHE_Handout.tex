@@ -1,0 +1,521 @@
+%% =====================================================================
+%%  fhe-handout.tex  --  A short handout on Fully Homomorphic Encryption
+%%  Build: pdflatex fhe-handout (twice)
+%% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[sc,osf]{mathpazo}
+\usepackage[scaled=0.90]{helvet}
+\usepackage{microtype}
+\usepackage[a4paper,top=22mm,bottom=24mm,left=24mm,right=24mm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{xcolor}
+\usepackage{tikz-cd}
+\usepackage{booktabs,tabularx}
+\usepackage[shortlabels]{enumitem}
+\setlist{itemsep=1pt,topsep=3pt}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[colorlinks,linkcolor=fheblue,citecolor=fheteal,urlcolor=fheteal]{hyperref}
+
+%% ---- palette (same as the main text) ---------------------------------
+\definecolor{fheblue}{HTML}{1F4E79}
+\definecolor{fheteal}{HTML}{0F766E}
+\definecolor{fheamber}{HTML}{B45309}
+\definecolor{fhered}{HTML}{B91C1C}
+\definecolor{fhegray}{HTML}{4B5563}
+
+\titleformat{\section}{\normalfont\sffamily\large\bfseries\color{fheblue}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\normalfont\sffamily\normalsize\bfseries\color{fheblue!85!black}}{\thesubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{12pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{3pt}
+
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{fhegray}FHE handout}
+\fancyhead[R]{\small\sffamily\color{fhegray}Why noise, and what to do about it}
+\fancyfoot[C]{\small\sffamily\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+%% ---- boxes ------------------------------------------------------------
+\newtcolorbox{formal}[1]{enhanced,colback=fheblue!4,colframe=fheblue,boxrule=0.6pt,
+  arc=2pt,left=6pt,right=6pt,top=3pt,bottom=3pt,before skip=7pt,after skip=7pt,
+  fonttitle=\sffamily\bfseries\small,coltitle=white,colbacktitle=fheblue,title={#1}}
+\newtcolorbox{aside}[1][]{enhanced,colback=fheteal!6,colframe=fheteal!6,
+  borderline west={2.5pt}{0pt}{fheteal},sharp corners,left=7pt,right=6pt,top=3pt,
+  bottom=3pt,before skip=7pt,after skip=7pt,fontupper=\small}
+\newtcolorbox{careful}{enhanced,colback=fhered!5,colframe=fhered!5,
+  borderline west={2.5pt}{0pt}{fhered},sharp corners,left=7pt,right=6pt,top=3pt,
+  bottom=3pt,before skip=7pt,after skip=7pt,fontupper=\small}
+
+%% ---- notation ---------------------------------------------------------
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Zq}{\ZZ_q}
+\newcommand{\Enc}{\mathsf{E}}
+\newcommand{\Dec}{\mathsf{D}}
+\newcommand{\Eval}{\mathsf{V}}
+\newcommand{\KeyGen}{\mathsf{K}}
+\newcommand{\sk}{\mathit{sk}}
+\newcommand{\ek}{\mathit{ek}}
+\newcommand{\evk}{\mathit{evk}}
+\newcommand{\Msg}{\mathcal{M}}
+\newcommand{\Ctx}{\mathcal{C}}
+\newcommand{\Fam}{\mathcal{F}}
+\newcommand{\hadd}{\boxplus}
+\newcommand{\hmul}{\boxtimes}
+\renewcommand{\vec}[1]{\bm{#1}}
+\newcommand{\inner}[2]{\langle #1,#2\rangle}
+\newcommand{\round}[1]{\lfloor #1\rceil}
+\newcommand{\indcpa}{\textsf{IND-CPA}}
+
+\begin{document}
+
+%% ---- title -------------------------------------------------------------
+\begin{center}
+  {\sffamily\bfseries\color{fheblue}\LARGE Computing on Locked Boxes\par}
+  \vspace{2pt}
+  {\sffamily\large\color{fhegray} A short handout on fully homomorphic encryption\par}
+  \vspace{4pt}
+  {\color{fheblue}\rule{0.5\textwidth}{0.8pt}}
+\end{center}
+
+% \noindent
+% Imagine handing a jeweller a locked glovebox full of gold. They can reach in
+% through the gloves, cut and solder and polish, but they can never take
+% anything out, and they never see the key. At the end you get your box back,
+% open it, and find a finished necklace. Fully homomorphic encryption (FHE) is
+% that glovebox for data. This handout tells the story of how we got one: what
+% the idea is, why it is useful, why the obvious way to build it fails, and why
+% every working construction ends up living with something called \emph{noise}.
+% It follows Gentry's survey~\cite{gentry} and Halevi's tutorial~\cite{halevi}
+% closely.
+
+%% =====================================================================
+\section{What is homomorphic encryption?}
+
+Informally, a homomorphic scheme is an ordinary encryption scheme with one
+extra public algorithm that computes on ciphertexts. Mathematically it is a
+commutative square: operating on ciphertexts and then decrypting gives the
+same answer as decrypting and then operating on messages,
+\[
+\begin{tikzcd}[column sep=large,row sep=normal]
+\Ctx\times\Ctx \arrow[r,"\hadd\text{ or }\hmul"] \arrow[d,dashed,"\Dec"'] & \Ctx \arrow[d,dashed,"\Dec"]\\
+\Msg\times\Msg \arrow[r,"+\text{ or }\times"] & \Msg
+\end{tikzcd}
+\]
+with the dashed arrows easy only for the key holder. In Gentry's phrase, it is
+\emph{a homomorphism that has been hardened}. Now let us say it properly. We
+follow Halevi~\cite[\S2.1]{halevi}; $\lambda$ is the security parameter and
+$\tau$ a \emph{functionality parameter} that will later bound circuit depth.
+
+\begin{formal}{Definition 1 (Homomorphic encryption: syntax)}
+A homomorphic encryption scheme over a plaintext space $\Msg$ is a tuple
+$\mathcal{E}=(\KeyGen,\Enc,\Dec,\Eval)$ of probabilistic polynomial-time
+algorithms:
+\begin{itemize}[leftmargin=*]
+\item $(\sk,\ek,\evk)\gets\KeyGen(1^\lambda,1^\tau)$ outputs a secret key, an
+  encryption key and a public evaluation key;
+\item $c\gets\Enc(\ek,m)$ encrypts $m\in\Msg$ using fresh randomness;
+\item $m:=\Dec(\sk,c)$ is deterministic;
+\item $c'\gets\Eval(\evk,\Pi,c_1,\dots,c_t)$ takes a circuit $\Pi$ over $\Msg$
+  with $t$ inputs and one output, and runs in time $\mathrm{poly}(\lambda,|\Pi|)$.
+\end{itemize}
+Outputs of $\Enc$ are \emph{fresh} ciphertexts; outputs of $\Eval$ are
+\emph{evaluated} ciphertexts. The scheme is \emph{public-key} if $\ek$ is
+published and \emph{secret-key} if $\ek=\sk$.
+\end{formal}
+
+\begin{formal}{Definition 2 (Correctness for a circuit family)}
+Let $\mathcal{C}=\{\mathcal{C}_\tau\}_{\tau\in\mathbb{N}}$ be a family of
+circuits. $\mathcal{E}$ is \emph{correct for $\mathcal{C}$}, or
+\emph{$\mathcal{C}$-homomorphic}, if for all $\lambda,\tau$ and every key
+tuple in the support of $\KeyGen(1^\lambda,1^\tau)$:
+\begin{enumerate}[(i),leftmargin=*]
+\item $\Dec(\sk,\Enc(\ek,m))=m$ for every $m\in\Msg$, with probability $1$;
+\item for every $\Pi\in\mathcal{C}_\tau$ with $t$ inputs and all
+  $m_1,\dots,m_t\in\Msg$, with probability $1$,
+  \[
+  \Dec\bigl(\sk,\ \Eval(\evk,\Pi,c_1,\dots,c_t)\bigr)=\Pi(m_1,\dots,m_t)
+  \quad\text{where } c_i\gets\Enc(\ek,m_i).
+  \]
+\end{enumerate}
+\end{formal}
+
+% \begin{formal}{Definition 3 (\indcpa{} security)}
+% In the \indcpa{} game the adversary $\mathcal{A}(1^\lambda)$ first outputs
+% $1^\tau$; the challenger runs $(\sk,\ek,\evk)\gets\KeyGen(1^\lambda,1^\tau)$
+% and gives $\mathcal{A}$ the public keys ($\ek$ if public-key, and $\evk$).
+% $\mathcal{A}$ outputs $m_0,m_1\in\Msg$, receives $c^\ast\gets\Enc(\ek,m_b)$ for
+% a uniform secret bit $b$, and outputs $b'$. In the secret-key case
+% $\mathcal{A}$ also gets an encryption oracle $\Enc(\sk,\cdot)$ throughout.
+% $\mathcal{E}$ is \emph{\indcpa{} secure} if for every PPT $\mathcal{A}$,
+% $\bigl|\Pr[b'=b]-\tfrac12\bigr|\le\mathrm{negl}(\lambda)$.
+% \end{formal}
+
+\noindent
+Notice that $\Eval$ does not appear in the security game: it uses no secret, so
+the adversary can run it on its own. Two consequences will matter later. The
+encryption must be randomized, since otherwise the adversary encrypts $m_0$
+itself and compares. And the adversary may collect as many
+(ciphertext, message) pairs as it likes. That second fact comes back to bite
+us in Section~3.
+
+\paragraph{Examples.} Homomorphic schemes are older than you might think.
+\begin{itemize}[leftmargin=*]
+\item \textbf{Textbook RSA} ($c=m^e \bmod N$) is multiplicative:
+  $m_1^e\,m_2^e=(m_1m_2)^e$. This observation is what made Rivest, Adleman
+  and Dertouzos invent the whole idea in 1978. (It is deterministic, though,
+  so it is not \indcpa{} secure as is.)
+\item \textbf{ElGamal}. In a cyclic group $G=\langle g\rangle$ of prime order
+  $q$, the secret is $s$, the public key $h=g^s$, and
+  \[
+  \Enc(m)=(g^t,\ m\,h^t),\qquad \Dec(c_0,c_1)=c_1\,c_0^{-s}.
+  \]
+  Multiplying two ciphertexts componentwise gives
+  $(g^{t_1+t_2},\ m_1m_2\,h^{t_1+t_2})$, a fresh-looking encryption of
+  $m_1m_2$. Security rests on the decisional Diffie--Hellman assumption.
+\item \textbf{Paillier} is additive: multiplying ciphertexts in
+  $\ZZ_{N^2}^\ast$ adds messages in $\ZZ_N$.
+\item \textbf{Goldwasser--Micali} encrypts a bit as a square or non-square
+  modulo $N=pq$; multiplying ciphertexts XORs the bits.
+\end{itemize}
+In the language of Definition~2, each of these is correct for the family of
+circuits built from \emph{one} kind of gate, of any size (and $\tau$ plays no
+role). A scheme is \emph{fully} homomorphic when the family contains every
+Boolean circuit, which needs both XOR and AND. Getting that second gate took
+thirty years.
+
+%% =====================================================================
+\section{Why would anyone want this?}
+
+The short answer: it lets you outsource computation without outsourcing
+trust. A few places where that matters:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Private cloud computing.} Gentry's own example: you upload
+  your encrypted financial records, a tax service fills in your (encrypted)
+  return, and you decrypt the result. The service learns nothing.
+\item \textbf{Private machine learning.} A hospital can send encrypted
+  patient data to a model owner and receive an encrypted diagnosis. Schemes
+  designed for approximate arithmetic (CKKS, the ``fourth generation'') are
+  aimed precisely at logistic regression and neural networks.
+\item \textbf{Encrypted search and private information retrieval.} A client
+  can query a database without the server learning which record was asked
+  for.
+\item \textbf{Secure computation with few messages.} Halevi calls FHE the
+  ``Swiss Army knife of cryptography'': two parties can compute a joint
+  function with just one message in each direction (given an extra
+  property called circuit privacy).
+\item \textbf{Sensitive analytics}, such as genomic studies or financial
+  risk models across institutions that cannot share raw data.
+\end{itemize}
+Two honest caveats. FHE is still expensive: Gentry estimates the overhead of
+the best current systems as low as about $10{,}000\times$ for suitable
+workloads, down from hopeless in 2009. And FHE computations are
+\emph{input-oblivious}: the circuit cannot branch on secret data, because
+branching would leak it.
+
+%% =====================================================================
+\section{Why noise cannot (as far as we know) be avoided}
+
+So we want a ring homomorphism, one that respects both $+$ and $\times$, and
+we want to hide it. Let's try the obvious things and watch them break.
+
+\subsection{Attempt one: a linear map, out in the open}
+
+Take a secret vector $\vec s\in\Zq^n$ and let decryption be the inner
+product,
+\[
+\Dec(\vec c)=\inner{\vec c}{\vec s}\bmod q .
+\]
+It is beautifully homomorphic: adding ciphertexts adds messages, exactly. It
+is also completely insecure. Remember the adversary can collect pairs
+$(\vec c_i,m_i)$. Each pair is one linear equation in the unknown key:
+\[
+\inner{\vec c_1}{\vec s}=m_1,\quad \inner{\vec c_2}{\vec s}=m_2,\quad\dots,\quad \inner{\vec c_n}{\vec s}=m_n .
+\]
+After about $n$ of them, Gaussian elimination hands over $\vec s$. Gentry
+remarks in a footnote that a surprising number of published FHE proposals
+die for exactly this reason: their decryption is linear.
+
+\begin{aside}
+Making decryption merely \emph{non-linear} does not rescue us. If decryption
+is a degree-$d$ polynomial in the ciphertext coordinates, treat each monomial
+as a new unknown and the same elimination works with about $n^d$ samples.
+The real requirement is that decryption be \emph{unlearnable} from examples,
+and a rigid ring homomorphism is very easy to learn.
+\end{aside}
+
+\subsection{Attempt two: hide the linear map in an exponent}
+
+Here is the clever fix, and it is exactly ElGamal. Keep the inner product, but
+compute it in the exponent of a group where discrete logarithms are hard.
+Writing $c_0=g^a$, $c_1=g^b$, $m=g^\mu$, ElGamal decryption is
+\[
+\mu=b-s\,a,
+\]
+a perfectly linear equation. The attacker just cannot \emph{see} it: to
+write down $a,b,\mu$ it would have to take discrete logs. So the linear
+algebra attack never gets started, and ElGamal is secure classically.
+
+Wonderful, but now try to multiply. A homomorphic multiplication in the
+exponent would be a public map $(g^x,g^y)\mapsto g^{xy}$. Apply it to the
+public values and you have solved the computational Diffie--Hellman problem,
+which is the very thing ElGamal's security rests on. So
+\begin{center}
+\emph{the exponent lets you add for free, but multiplying in it would break it.}
+\end{center}
+(Bilinear pairings are the one partial exception: they buy exactly one
+multiplication, landing in a different group. That gives degree-2 schemes
+such as Boneh--Goh--Nissim, still far from arbitrary circuits.)
+
+Let's pause on the pattern. Hiding the structure buys security, but only for
+\emph{one} operation. FHE needs two.
+
+\subsection{The quantum wall}
+
+There is a second, independent problem, and it does not care how cleverly the
+structure is hidden. In any clean scheme, the encryptions of the identity form
+a subgroup $H$ of the ciphertext group $G$: the kernel of decryption.
+\indcpa{} security demands that random elements of $H$ look like random
+elements of $G$.
+
+\begin{formal}{Theorem 4 (Watrous; Armknecht et al.)}
+A quantum computer can compute the order of any finite \emph{solvable} group
+given by generators. Consequently, a scheme whose ciphertexts form a finite
+solvable group, and whose decryption is a group homomorphism, is not
+\indcpa{} secure against quantum adversaries.
+\end{formal}
+
+\noindent
+``Solvable'' means built out of abelian layers: repeatedly taking the
+commutator subgroup $G\supseteq [G,G]\supseteq\cdots$ eventually reaches the
+identity. Every abelian group qualifies. The attack is simple once you have
+order-finding: collect encryptions of the identity, let $K$ be the subgroup
+they generate, and test whether the challenge $c$ lies in $K$ by checking
+whether adding it changes the order, $|\langle K,c\rangle|=|K|$.
+
+% Now the punchline for FHE. The additive group of \emph{any} ring is abelian,
+% and encryptions of $0$ form an ideal, which is a subgroup. So
+% \begin{center}
+% \emph{every noise-free ring-homomorphic scheme is quantum-insecure, however it is hidden.}
+% \end{center}
+% GM, ElGamal and Paillier fall to this too (and to Shor), but only against a
+% large quantum computer; classically they remain secure.
+
+\subsection{Back to the main road: add noise}
+
+Return to Attempt one and change a single thing. Put a small random error
+into every equation:
+\[
+\inner{\vec c}{\vec s}=m\cdot\round{q/2}+e,\qquad |e|\ll q .
+\]
+Decryption computes the inner product and rounds to the nearest of $0$ or
+$\round{q/2}$. This is Regev's encryption scheme, based on \emph{learning
+with errors} (LWE). Watch what happens to the two attacks.
+\begin{itemize}[leftmargin=*]
+\item \textbf{Gaussian elimination} now solves $A\vec s=\vec b-\vec e$ with
+  $\vec e$ unknown. It outputs $\vec s+A^{-1}\vec e$, and for random $A$ the
+  term $A^{-1}\vec e$ is uniformly random. Elimination multiplies small errors
+  by huge coefficients, and you get a random wrong answer.
+\item \textbf{The subgroup} disappears. The set of valid encryptions of $0$ is
+  a fuzzy band around the hyperplane $\inner{\vec c}{\vec s}=0$. Adding two of
+  them doubles the noise, so the band is not closed, and in fact it generates
+  the entire ciphertext space. There is no kernel for Watrous to find.
+\end{itemize}
+And noise does not care how many operations the underlying homomorphism
+respects, so unlike the exponent it hardens $+$ and $\times$ together.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}l X X l@{}}
+\toprule
+\textbf{Hardening} & \textbf{Classical} & \textbf{Quantum} & \textbf{Operations}\\
+\midrule
+none (visible linear) & broken by Gaussian elimination & broken & $+$\\
+exponent (ElGamal, \dots) & secure under DDH, QR, DCR & broken (Shor, Watrous) & one\\
+noise (LWE) & secure under LWE & no known attack & $+$ and $\times$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{careful}
+\textbf{A word of honesty.} ``Cannot be avoided'' should really be ``nobody
+knows how to avoid it''. Noise-free FHE is an open problem (Gentry \S5).
+Quantumly, noise-free ring schemes are ruled out by the theorem above, and
+the only clean escape left is a \emph{non-solvable} group such as $A_5$, for
+which no secure candidate is known. Classically, there is no impossibility
+theorem at all; it is simply that every concrete attempt has been broken.
+\end{careful}
+
+%% =====================================================================
+\section{A toy example: watching the noise blow up}
+
+Noise buys security, but it has a price, and the price is easiest to see in
+the integer scheme of van Dijk, Gentry, Halevi and Vaikuntanathan~\cite{dghv}.
+It rests on the \emph{approximate GCD} problem: given many numbers that are
+close to multiples of a secret odd $p$, find $p$.
+
+\begin{formal}{A symmetric toy scheme over the integers}
+Secret key: an odd integer $p$. To encrypt a bit $m$, pick a random $q$ and a
+small random $r$ and output
+\[
+c=q\,p+\underbrace{2r+m}_{\text{noise term}} .
+\]
+To decrypt, reduce $c$ modulo $p$ into $(-p/2,p/2]$ and take the result
+modulo $2$. This works as long as the noise term stays below $p/2$ in
+absolute value.
+\end{formal}
+
+% \noindent
+% Take $p=1009$. Encrypt $m_1=1$ with $q=17$, $r=3$, and $m_2=0$ with $q=23$,
+% $r=5$:
+% \[
+% c_1=17\cdot1009+7=17160,\qquad c_2=23\cdot1009+10=23217 .
+% \]
+% \textbf{Addition.} $c_1+c_2=40377$, and $40377\bmod 1009=17$, which is odd,
+% so it decrypts to $1=m_1\oplus m_2$. The noise went from $7$ and $10$ to
+% $17$: noises \emph{add}.
+
+% \textbf{Multiplication.} $c_1c_2=398403720$, and modulo $1009$ this is
+% $70=7\times10$, which is even, giving $0=m_1\wedge m_2$. Correct, but the noise
+% went from $7$ and $10$ to $70$: noises \emph{multiply}.
+
+% So far so good. Now take a fresh encryption of $1$ with noise term $9$
+% ($q=12$, $r=4$, so $c=12117$) and square it twice, which should still encrypt
+% $1\cdot1\cdot1\cdot1=1$:
+% \[
+% \begin{array}{lll}
+% c & \text{noise } 9 & \text{decrypts to } 1 \ \checkmark\\
+% c^2 & \text{noise } 81 & \text{decrypts to } 1 \ \checkmark\\
+% c^4 & \text{noise } 6561 \equiv -502 \pmod{1009} & \text{decrypts to } 0 \ \boldsymbol{\times}
+% \end{array}
+% \]
+% The true noise $6561$ has passed $p/2\approx504$, so reducing modulo $p$
+% wraps it around to $-502$, and the parity flips. The ciphertext is now
+% garbage, through no fault of the computation.
+
+\begin{aside}
+In general, if fresh noise is about $B$, then after $d$ levels of
+multiplication it is about $B^{2^d}$, while additions only make it grow
+linearly. With LWE the picture is the same in spirit: Gentry shows each
+multiplication multiplies the noise by a polynomial factor $\mathrm{poly}(n)$,
+so after depth $d$ the noise is about $\varepsilon_0\cdot\mathrm{poly}(n)^d$.
+Either way, \textbf{multiplicative depth is the budget}, and it runs out.
+\end{aside}
+
+%% =====================================================================
+\section{The way forward: from levels to full FHE}
+
+The toy example leaves us with a scheme that is correct up to some depth and
+no further. So the natural thing is to make the depth part of the contract.
+Before we do, one more requirement, without which every definition below
+would be empty.
+
+\begin{formal}{Definition 5 (Compactness, Halevi Def.~7)}
+$\mathcal{E}$ is \emph{compact} if there is a fixed polynomial $B(\cdot)$ such
+that for all $\lambda,\tau$, every single-output circuit $\Pi$ and all inputs,
+every evaluated ciphertext $c'\gets\Eval(\evk,\Pi,c_1,\dots,c_t)$ satisfies
+$|c'|\le B(\lambda)$, independently of $\tau$ and of $\Pi$.
+\end{formal}
+
+\noindent
+Why insist on this? Consider the ``scheme'' whose $\Eval$ simply outputs the
+pair $(\Pi,(c_1,\dots,c_t))$ and whose decryption decrypts every $c_i$ and then
+runs $\Pi$ itself. It is correct for \emph{every} circuit and as secure as the
+underlying encryption, and it is useless: the key holder does all the work.
+Compactness rules it out by forcing the result of a computation to be as
+short as a fresh ciphertext.
+
+Now the two definitions this handout has been heading towards. Fix a
+functionally complete gate set, say $\{\mathrm{XOR},\mathrm{AND}\}$ over
+$\Msg=\{0,1\}$ (or just $\{\mathrm{NAND}\}$), and write $\mathrm{depth}(\Pi)$
+for the length of the longest input-to-output path in $\Pi$.
+
+\begin{formal}{Definition 6 (Leveled fully homomorphic encryption)}
+$\mathcal{E}$ is \emph{leveled fully homomorphic} if it is compact and correct
+for the family $\mathcal{C}=\{\mathcal{C}_\tau\}$ where
+\[
+\mathcal{C}_\tau=\{\,\Pi \text{ Boolean circuit}:\ \mathrm{depth}(\Pi)\le\tau\,\}.
+\]
+The parameter $\tau=L$ is the \emph{number of levels}. The keys output by
+$\KeyGen(1^\lambda,1^L)$ may grow with $L$ (polynomially), but evaluated
+ciphertexts may not: their length is bounded by $B(\lambda)$ alone.
+\end{formal}
+
+\noindent
+Gentry's version (Def.~12 of~\cite{gentry}) is the same idea phrased with a
+key for every level: $\KeyGen$ produces $(\sk^{(i)},\ek^{(i)},\evk^{(i)})$ for
+$i=0,\dots,L$, each gate moves a ciphertext from level $i$ to level $i-1$, and
+the algorithms are otherwise independent of $L$. Many practical schemes in the
+BGV family~\cite{bgv} meet a relaxed variant, \emph{weak compactness}, where
+the ciphertext length may grow polynomially in $L$ but must stay smaller
+than the circuits being evaluated (Halevi Def.~8).
+
+\begin{formal}{Definition 7 (Fully homomorphic encryption)}
+$\mathcal{E}$ is \emph{fully homomorphic} if it is compact and correct for a
+family with
+\[
+\mathcal{C}_1\ \supseteq\ \{\text{all Boolean circuits, of every depth and size}\}.
+\]
+In this case $\tau$ is irrelevant and we write $\KeyGen(1^\lambda)$: a single
+key tuple serves every computation.
+\end{formal}
+
+\noindent
+Let's pause and look at the difference, because it is entirely a matter of
+quantifier order:
+\[
+\begin{array}{lll}
+\textbf{Leveled FHE:} & \forall L\ \ \exists\,(\sk,\ek,\evk)_L & \forall\,\Pi \text{ with } \mathrm{depth}(\Pi)\le L:\ \text{correct},\\[2pt]
+\textbf{FHE:}         & \exists\,(\sk,\ek,\evk)\ \ \forall L & \forall\,\Pi \text{ with } \mathrm{depth}(\Pi)\le L:\ \text{correct}.
+\end{array}
+\]
+A leveled scheme asks you to name the depth before you see a key; an FHE
+scheme lets the levels be unbounded. In particular every FHE scheme is
+trivially leveled (ignore $L$), while turning a leveled scheme into a fully
+homomorphic one is the genuinely hard direction.
+
+\begin{aside}
+Gentry phrases FHE as an \emph{unbounded} commutative diagram (Def.~11
+of~\cite{gentry}): there is a set of ciphertexts $\Ctx$, containing the fresh
+ones, that is \emph{closed} under the homomorphic gates and on which the
+square of Section~1 commutes. Evaluated ciphertexts can then be fed back into
+$\Eval$ forever, and their size and decryption cost never depend on how many
+gates produced them. In a leveled scheme the corresponding set $\Ctx^{(i)}$ is
+only mapped to $\Ctx^{(i-1)}$, and after level $0$ the road ends.
+\end{aside}
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\toprule
+\textbf{Notion} & \textbf{Correct for} & \textbf{Example} \\
+\midrule
+single-gate, unbounded & circuits of one gate type, any size & GM (XOR), ElGamal ($\times$), Paillier ($+$) \\
+somewhat / bounded & circuits of small, fixed depth & the toy integer scheme of Section~4 \\
+leveled FHE & all circuits of depth $\le L$, $L$ fixed at key generation & LWE-based BGV, GSW with $q$ chosen for $L$ \\
+FHE & all circuits, one key & needs a further idea \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Where this leaves us.} The story has a slightly ironic shape. We
+wanted an exact ring homomorphism, and exactness is precisely what got us
+broken. So we blurred it with noise, accepted that the noise grows, and
+discovered that the honest thing to promise is a \emph{level budget}: leveled
+FHE. Removing that budget, so that one key carries us through unboundedly many
+levels, is what turns leveled FHE into full FHE, and it is the next chapter of
+the story.
+
+\begin{thebibliography}{9}\small
+\bibitem{gentry} C.~Gentry, \emph{Homomorphic encryption: a mathematical
+  survey}, Proc.\ ICM 2022, vol.~2, 956--1006.
+\bibitem{halevi} S.~Halevi, \emph{Homomorphic encryption}, in Tutorials on
+  the Foundations of Cryptography, Springer, 2017, 219--276.
+\bibitem{dghv} M.~van Dijk, C.~Gentry, S.~Halevi, V.~Vaikuntanathan,
+  \emph{Fully homomorphic encryption over the integers}, EUROCRYPT 2010.
+\bibitem{bgv} Z.~Brakerski, C.~Gentry, V.~Vaikuntanathan, \emph{(Leveled)
+  fully homomorphic encryption without bootstrapping}, ACM TOCT 6(3), 2014.
+\end{thebibliography}
+
+\end{document}
