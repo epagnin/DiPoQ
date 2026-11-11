@@ -1,18 +1,21 @@
 \newcommand{\nd}{\ensuremath{n}}
 \newcommand{\ns}{\ensuremath{m}}
 \newcommand{\LL}{\ensuremath{\mathcal{L}}}
-\newcommand{\RR}{\ensuremath{\mathbb{R}}}
-\newcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
+\renewcommand{\RR}{\ensuremath{\mathbb{R}}}
+\renewcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
 \newcommand{\vv}[1]{\mathbf{#1}}
 \newcommand{\group}{\ensuremath{\mathbb{G}}\xspace}
 \newcommand{\Zq}{\mathbb{Z}_q}
 \newcommand{\randfrom}{\overset{\$}{\leftarrow}}
 \newcommand{\nmod}{\mathrm{\; mod \;}}
+\let\poly\relax
 \DeclareMathOperator{\poly}{poly}
 
 \newcommand{\K}{\mathsf{KeyGen}}
 \newcommand{\E}{\mathsf{Enc}}
 \newcommand{\D}{\mathsf{Dec}}
+\renewcommand{\sign}{\mathsf{Sign}}
+\newcommand{\ver}{\mathsf{Verify}}
 \newcommand{\hy}{\mathrm{FO}}
 \newcommand{\asym}{\mathsf{ASYM}}
 \newcommand{\sym}{\mathsf{SYM}}
@@ -22,7 +25,13 @@
 \newcommand{\vx}{\ensuremath{\mathbf{x}}\xspace}
 \newcommand{\td}{\ensuremath{\mathsf{Td}}\xspace}
 
+\renewcommand{\sk}{\ensuremath{\mathsf{sk}}\xspace}
+\renewcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
+
 %%% ABBREVIATIONS %%%
 \newcommand{\etal}{\textit{et al.}\xspace}
 \newcommand{\eg}{\textit{e.g.,}\xspace}
 \newcommand{\ie}{\textit{i.e.,}\xspace}
+
+
+\newcommand{\cryptocodesize}{\footnotesize}

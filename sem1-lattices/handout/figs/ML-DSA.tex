@@ -1,0 +1,89 @@
+
+\begin{figure}
+    \centering
+    \begin{pcvstack}[boxed, space=0.4em]
+        \procedure[linenumbering=on,codesize=\small]
+        {$\K$}{
+            \mathbf{A} \randfrom \RR_q^{k \times \ell} \\
+            (\mathbf{s}_1,\mathbf{s}_2)
+                \randfrom S_\eta^\ell \times S_\eta^k 
+                    \hfill \pccomment{\(S_\eta\) - set of polynomials in \(\RR_q\) with mods coefficients in \([-\eta,\eta]\)} \\
+            \mathbf{t} \gets \mathbf{A}\mathbf{s}_1 + \mathbf{s}_2 \\
+            \pcreturn (\pk=(\mathbf{A},\mathbf{t}),
+                \sk=(\mathbf{s}_1,\mathbf{s}_2)) \hfill \pccomment{Computing \((\mathbf{s}_1,\mathbf{s}_2)\) from \((\mathbf{A},\mathbf{t})\) is an instance of MLWE.}
+        }
+
+        \procedure[linenumbering=on,codesize=\small]
+        {$\sign(\sk,M)$}{
+            \mathbf{z} \gets \bot \\
+            \pcwhile \mathbf{z}=\bot \pcdo \\
+            \pcind \mathbf{y} \randfrom S_{\gamma_1}^\ell \label{step:sample-y}\\
+            \pcind \mathbf{w} \gets
+                \mathsf{HighBits}(\mathbf{A}\mathbf{y}, 2\gamma_2)  
+                    \hfill\pccomment{\(\mathsf{HighBits}\) is defined in Figure~\ref{fig:HiLoBits}.} \\
+            \pcind c \in B_\tau \gets H(M \parallel \mathbf{w}_1)  \label{step:hash-M}
+                \hfill \pccomment{challenge} \\
+            \hfill \pccomment{} \\
+            \pcind \mathbf{z} \gets \mathbf{y}+c\mathbf{s}_1 
+                \hfill \pccomment{response} \\
+            \pcind \pcif
+                \|\mathbf{z}\|_\infty \geq \gamma_1-\beta
+                \text{ or }
+                \|\mathsf{LowBits}( \mathbf{A}\mathbf{y}-c\mathbf{s}_2, 2\gamma_2)\|_\infty \geq \gamma_2-\beta \\
+                \hfill\pccomment{\(\mathsf{LowBits}\) is defined in Figure~\ref{fig:HiLoBits}.} \\
+                \pcind \pcind \mathbf{z}\gets\bot 
+                \hfill\pccomment{rejection sampling} \\ 
+            \pcreturn \sigma=(\mathbf{z},c)
+        }
+
+        \procedure[linenumbering=on,codesize=\small]
+        {$\ver(\pk,M,\sigma=(\mathbf{z},c))$}{
+            \mathbf{w}' \gets
+                \mathsf{HighBits}( \mathbf{A}\mathbf{z}-c\mathbf{t}, 2\gamma_2)
+                    \hfill\pccomment{\(
+                        \mathbf{A}\mathbf{z}-c\mathbf{t} = 
+                        \mathbf{A}(\mathbf{y}+c\mathbf{s}_1)-c(\mathbf{A}\mathbf{s}_1 + \mathbf{s}_2 ) = 
+                        \mathbf{A}\mathbf{y}-c\mathbf{s}_2\)} \label{step:explainLoHi}\\
+            \pccomment{The \(\mathsf{LowBits}\) of \(-c\mathbf{s}_2\) needs to be sufficiently small such that
+                        \(\mathsf{HighBits}(\mathbf{w}') = \mathsf{HighBits}(\mathbf{w})\).}\\
+            \pcreturn
+                \left[
+                \|\mathbf{z}\|_\infty
+                < \gamma_1-\beta
+                \right]
+                \land
+                \left[
+                c=H(M\parallel\mathbf{w}_1')
+                \right]
+        }
+    \end{pcvstack}
+    \caption{Simplified ML-DSA signature scheme.}
+    \label{fig:ml-dsa}
+\end{figure}
+
+
+
+\begin{figure}
+    \centering
+    \begin{pcvstack}[boxed, space=0.4em]
+        \procedure[linenumbering=on,codesize=\small]
+        {$\mathsf{Decompose}(r,\alpha)$}{
+            \hfill \pccomment{\(r\in[0,q-1]\) and \(\alpha\) satisfies $q-1=m\alpha$ for some $m$.} \\
+            r_H = r \text{mods} \alpha \\
+            r_L = (r-r_0)/\alpha \\
+            \pcreturn (r_H,r_L)
+        }
+        \procedure[linenumbering=on,codesize=\small]
+        {$\mathsf{HighBits}(r,\alpha)$}{
+            (r_H,r_L) \gets \mathsf{Decompose}(r,\alpha) \\
+            \pcreturn r_H
+        }
+        \procedure[linenumbering=on,codesize=\small]
+        {$\mathsf{LowBits}(r,\alpha)$}{
+            (r_H,r_L) \gets \mathsf{Decompose}(r,\alpha)\\
+            \pcreturn r_L
+        }
+    \end{pcvstack}
+    \caption{Decompose, Highbits and Lowbits}
+    \label{fig:HiLoBits}
+\end{figure}

@@ -88,8 +88,8 @@ The proves secret key is a uniformly random integer vector \(\vx\in\{0,1\}^{m}\)
 
 One run of the protocol consists of the following sequence of steps:
 \begin{enumerate}
-    \item The prover samples a vector \(\mathbf{y}\gets \{0,\dots, 5m-1\}^m\), and sends \(\mathbf{v}:=\mathbf{Ay}\) to the verifier.
-    \item The verifier samples \(c\gets\{0,1\}\) and sends to the prover.
+    \item The prover samples a vector \(\mathbf{y}\randfrom \{0,\dots, 5m-1\}^m\), and sends \(\mathbf{v}:=\mathbf{Ay}\) to the verifier.
+    \item The verifier samples \(c\randfrom\{0,1\}\) and sends to the prover.
     \item The prover responds with \(\mathbf{z}:= c\cdot \mathbf{x}+ \mathbf{y}\) if \(\mathbf{z}\in\{1,\dots, 5m-1\}^m\). Otherwise it aborts.
     \item If the prover sends \(\mathbf{z}\) the verifier accepts if \(\mathbf{Az} = c\cdot\mathbf{u}+\mathbf{v}\) and \(\mathbf{z}\in\{1,\dots, 5m-1\}^m\).
 \end{enumerate}
@@ -101,5 +101,35 @@ The full protocol, works by running several instances of the above protocol in p
 \subsubsection{ML-DSA (CRYSTALS-Dilithium)}
 First, to avoid any confusion, ML-DSA is NISTs official name for the signature scheme Dilithium/CRYSTALS-Dilithium, \ie ML-DSA and Dilithium are just two names for the same signature scheme.
 
-The module-lattice-based digital signature algorithm (ML-DSA) is technically involved and has several subtleties. To provide intuition for its design choices, we first present the full scheme and then discuss several of its technical aspects. At a high level, ML-DSA is based on a Schnorr-like identification protocol transformed into a digital signature scheme using the Fiat–Shamir transform. However, as discussed above, in the lattice-based setting, rejection sampling is required to prevent leakage of information about the secret key, the same principle applies to ML-DSA as we will see.
+The module-lattice-based digital signature algorithm (ML-DSA) is technically involved and has several subtleties. To provide intuition for its design choices, we first present a slightly simplified version of ML-DSA \footnote{For the full version please see the NIST specifications: https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf} and then discuss several of its technical aspects. At a high level, ML-DSA is based on a Schnorr-like identification protocol transformed into a digital signature scheme using the Fiat–Shamir transform. However, as discussed above, in the lattice-based setting, rejection sampling is required to prevent leakage of information about the secret key, the same principle applies to ML-DSA as we will see.
 
+
+Figure~\ref{fig:ml-dsa} present a conceptually correct but highly simplified version of ML-DSA, actually the scheme in Figure~\ref{fig:ml-dsa} is (almost) Lyubashevsky rejection sampling \cite{AC:Lyubashevsky09,EC:Lyubashevsky12}. Below we list some technical aspects and insights of this simplified version of ML-DSA, that directly translates also to the full ML-DSA implementation.
+\begin{description}
+\item[Why do we need \(\mathsf{HighBits}\) and \(\mathsf{LowBits}\) algorithms?]
+
+        As explained in the comments to the algorithm \(\ver\) in Figure~\ref{fig:ml-dsa}, the verifier can't compute \(\mathbf{Ay}\), but only \(\mathbf{Ay}-c\mathbf{s}_2\). Thus, since \(H(M|| \mathbf{Ay}) \neq H(m||\mathbf{Ay}-c\mathbf{s}_2)\), the verification would fail, unless we do the trick with High and Low bits.
+    
+\item[Why do we need rejection sampling based on the infinity-norm of \(\mathbf{z}\)?]
+
+     Before applying the rejection condition, each coefficient of
+    $\mathbf{z}$ lies in \( (-\gamma_1-\beta,\gamma_1+\beta]\cap\mathbb{Z}. \)
+    Since each coefficient of $\mathbf{y}$ lies in$(-\gamma_1,\gamma_1]$ and $\|c\mathbf{s}_1\|_\infty \leq \beta$.
+    Consequently, observing a coefficient of  $\mathbf{z}$ equal to $\gamma_1+\beta$ reveals that the corresponding coefficient of $c\mathbf{s}_1$ equals $\beta$.
+    Thus, the signature may leak information about the secret key $\mathbf{s}_1$, since \(c\) is known. Similarly, if a coefficient of a polynomial in \(\mathbf{z}\) is \(\gamma_1-\beta-1\), then the corresponding coefficient of \(c\mathbf{s}_1\) must be either \(\beta-1\) or \(\beta\).
+    \item[What is \(B_\tau\) any why do \(c\) need to be in this set?] 
+\end{description}
+
+
+
+\input{figs/ML-DSA.tex}
+
+\bigskip \noindent \textit{Towards  NIST standardized ML-DSA} \\
+We will not go into full details of the ML-DSA construction, but we will outline and motivate some of the alterations needed to transform the scheme in Figure~\ref{fig:ml-dsa} to the NIST standardized ML-DSA signature scheme. Remark, that many of these modifications will concern efficiency and key-size. 
+
+
+The signature scheme in Figure~\ref{fig:ml-dsa} suffers from large public and secret keys. Roughly the size of the matrix \(\mathbf{A}\) is \(41\)kB, and the size of \(\mathbf{t}\) is \(6\)kB. Partially this is solved in ML-DSA by generating \(\mathbf{A}\) from a public $256$-bit seed \(\rho\), this reduces the size of the public key to the size of \(\rho + \mathbf{t}\). The size of \(\mathbf{t}\) can be reduced by only considering \textit{the high order bits}\footnote{Not to be mixed up with the \(\mathsf{HighBits}\).} of the coefficient of the polynomials in \(\mathbf{t}\), for more details see \cite{NISTPQC-R3:CRYSTALS-DILITHIUM20}. The size of the secret keys can be reduced by generating \((\mathbf{s}_1,\mathbf{s}_2)\) from a $512$-bit seed \(\rho'\).
+
+A second issue with the construction in Figure~\ref{fig:ml-dsa}, is that the hash of the message is computed in each iteration of the rejection sampling, Line~\ref{step:hash-M} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, this is slow if the message \(M\) is large. This is solved by computing \(\mu=H(M)\) outside the while-loop and then computing \(c=H(\mu||\mathbf{w})\) in each iteration.
+
+A third issue is the large amount of random bits needed in each iteration of the rejection-sampling in the signature algorithm, Line~\ref{step:sample-y} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, in ML-DSA this is made more efficient by computing \(\mathbf{y}\) from a seed \(\rho''\) and a counter \(\kappa\), the seed \(\rho''\) is obtained by shaing a secret seed key, \(K\), and the message hash \(\mu\) and the counter is incremented in each iteration. Remark that this makes the signature algorithm deterministic.
