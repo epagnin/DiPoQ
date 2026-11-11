@@ -4,10 +4,10 @@
     \begin{pcvstack}[boxed, space=0.4em]
         \procedure[linenumbering=on,codesize=\small]
         {$\K$}{
-            \mathbf{A} \randfrom \RR_q^{k \times \ell} \\
+            \mathbf{A} \randfrom R_q^{k \times \ell} \\
             (\mathbf{s}_1,\mathbf{s}_2)
                 \randfrom S_\eta^\ell \times S_\eta^k 
-                    \hfill \pccomment{\(S_\eta\) - set of polynomials in \(\RR_q\) with mods coefficients in \([-\eta,\eta]\)} \\
+                    \hfill \pccomment{\(S_\eta\) - set of polynomials in \(R_q\) with mods coefficients in \([-\eta,\eta]\)} \\
             \mathbf{t} \gets \mathbf{A}\mathbf{s}_1 + \mathbf{s}_2 \\
             \pcreturn (\pk=(\mathbf{A},\mathbf{t}),
                 \sk=(\mathbf{s}_1,\mathbf{s}_2)) \hfill \pccomment{Computing \((\mathbf{s}_1,\mathbf{s}_2)\) from \((\mathbf{A},\mathbf{t})\) is an instance of MLWE.}
@@ -21,9 +21,9 @@
             \pcind \mathbf{w} \gets
                 \mathsf{HighBits}(\mathbf{A}\mathbf{y}, 2\gamma_2)  
                     \hfill\pccomment{\(\mathsf{HighBits}\) is defined in Figure~\ref{fig:HiLoBits}.} \\
-            \pcind c \in B_\tau \gets H(M \parallel \mathbf{w}_1)  \label{step:hash-M}
+            \pcind c \in B_\tau \gets H(M \parallel \mathbf{w})  \label{step:hash-M}
                 \hfill \pccomment{challenge} \\
-            \hfill \pccomment{} \\
+                \hfill \pccomment{\(B_\tau\) polynomails in \(S_1\) for which exactly \(\tau\) of coefficient are non-zero.} \\
             \pcind \mathbf{z} \gets \mathbf{y}+c\mathbf{s}_1 
                 \hfill \pccomment{response} \\
             \pcind \pcif
@@ -53,7 +53,7 @@
                 \right]
                 \land
                 \left[
-                c=H(M\parallel\mathbf{w}_1')
+                c=H(M\parallel\mathbf{w}')
                 \right]
         }
     \end{pcvstack}
@@ -69,8 +69,9 @@
         \procedure[linenumbering=on,codesize=\small]
         {$\mathsf{Decompose}(r,\alpha)$}{
             \hfill \pccomment{\(r\in[0,q-1]\) and \(\alpha\) satisfies $q-1=m\alpha$ for some $m$.} \\
-            r_H = r \text{mods} \alpha \\
-            r_L = (r-r_0)/\alpha \\
+            r_L = r \text{ mods } \alpha \\
+            \hfill\pccomment{ mods is the symmetric mod operation.} \\
+            r_H = (r-r_L)/\alpha \\
             \pcreturn (r_H,r_L)
         }
         \procedure[linenumbering=on,codesize=\small]

@@ -1,8 +1,8 @@
 \section{Lattice based Signature Schemes}\label{sec:sig}
 In this section we will introduce post quantum secure signature schemes based on lattice assumptions. 
-When talking about lattice based signature schemes there are two core paradigms: \textit{Fiat-Shamir with abort} and \textit{Hash-and-Sign} introduced in \ref{} and \ref{}. After introducing these two paradigms, we move on two considering two NIST candidate PQ signature schemes ML-DSA and Falcon, which  are based on these two paradigms respectively.
+When talking about lattice based signature schemes there are two core paradigms: \textit{Fiat-Shamir with abort} and \textit{Hash-and-Sign} introduced in \ref{sec:FS} and \ref{sec:hash-n-sign}. Along with introducing these two paradigms, we also introduce two NIST candidates for standarlization of PQ signature schemes; ML-DSA and Falcon, which  are based on these two paradigms respectively.
 
-\subsection{Hash-and-sign paradigm \& Signatures with Trapdoor Sampling}
+\subsection{Hash-and-sign paradigm \& Signatures with Trapdoor Sampling} \label{sec:hash-n-sign}
 One of the seminal lattice-based signature schemes is the GPV  signature scheme \cite{STOC:GenPeiVai08}, which combines the hash-and-sign paradigm with a lattice-based preimage sampleable function.
 Prior to further specifying the GPV signatures, we start with introduce the hash-and-sign paradigm, then we go into lattice trapdoors and preimage sampleable functions.
 \subsubsection{Hash-and-sign}
@@ -27,8 +27,8 @@ For a target vector \(\mathbf u\in\ZZ_q^n\), we additionally define the lattice 
 \mathbf A\mathbf x=\mathbf u \in \ZZ_q^n\}.
 \]
 
-Definition~\ref{def:ISIS} states the inhomogeneous Short Integer Solution (ISIS) problem, which is the analogue of SIS for lattice cosets. It is belived that solving the ISIS problem is hard, \ie finding a sufficiently short preimage of a given target is computationally hard for appropriate parameters.
-% assuming the hardness of 
+Definition~\ref{def:ISIS} states the inhomogeneous Short Integer Solution (ISIS) problem, which is the analogue of SIS for lattice costs. It is belived that solving the ISIS problem is hard, \ie finding a sufficiently short preimage of a given target is believed to be hard for appropriate parameters.
+
 
 \begin{definition}[ISIS \cite{STOC:GenPeiVai08} (informal)] \label{def:ISIS}
 \textit{ISIS} asks to find a \textit{short vector}  \(\mathbf{x}\in \ZZ^m\) such that 
@@ -57,7 +57,7 @@ Given a lattice \(\lattice:=\lattice(\mathbf{A})\) and the corresponding trapdoo
 This is the conceptual idea behind the lattice preimage sampleable functions (PSF) used in GPV signatures, for further details we refer the reader to \cite{STOC:GenPeiVai08,peikert_dec}.
 %\[||\vx|| \leq ||\td_A||\cdot \sqrt{\log \: O(n/\epsilon)}\]
 \begin{theorem}[\cite{STOC:GenPeiVai08,peikert_dec}]\label{thm:gaussian}
-    There is a randomized polynomial-time algorithm that given any basis \(\mathbf{S}\) of a lattice $\mathcal{L}=\mathcal{L}(\mathbf{S})\subset \mathbb{R}^n$, any coset \(\mathbf{c}+\mathcal{L}\) and any Gaussian parameter \(s\geq ||\mathbf{S}||\cdot \sqrt{\log \: O(n/\epsilon)}\), outputs a sample \(\mathbf{x}\), such that \(\mathbf{x}\) has a distribution that is within statistical distance \(\epsilon\) of the discrete Gaussian \(D_{\mathbf{c}+\mathcal{L},s}\).
+    There is a randomized polynomial-time algorithm that given any basis \(\mathbf{S}\) of a lattice $\mathcal{L}=\mathcal{L}(\mathbf{S})\subset \mathbb{R}^n$, any coset \(\mathbf{c}+\mathcal{L}\) and any Gaussian parameter \(s\geq ||\mathbf{S}||\cdot O(\sqrt{\log \: O(n/\epsilon)})\),\footnote{ \( ||\cdot|| \) is the Gram-Schmidt norm} outputs a sample \(\mathbf{x}\), such that \(\mathbf{x}\) has a distribution that is within statistical distance \(\epsilon\) of the discrete Gaussian \(D_{\mathbf{c}+\mathcal{L},s}\).
 \end{theorem}
 
 An important property of Gaussian sampling is that the resulting distribution is statistically close to a discrete Gaussian distribution that is independent of the short basis \(\mathbf{S}\) used by the sampling algorithm. Consequently, the distribution of these preimages leaks, essentially, no information about the short basis that enabled the efficient sampling of short preimages.
@@ -72,11 +72,11 @@ In this section we finally define the GPV signatures.
 \end{description}
 
 \subsubsection{Falcon}
-A prominent lattice-based signature scheme is Falcon~\cite{Falcon}, for which we provide only a brief overview. Falcon follows the hash-and-sign paradigm and is constructed using NTRU lattices~\cite{HPS98}. To generate signatures, Falcon employs a trapdoor sampling algorithm known as fast Fourier sampling~\cite{EPRINT:DucPre15b}. Its security relies on the hardness of finding short vectors in NTRU lattices, commonly formulated as the NTRU-SIS problem.
+A prominent lattice-based signature scheme is Falcon~\cite{Falcon}\footnote{Visit this webpage about Falcon: https://falcon-sign.info}, for which we provide only a brief overview. Falcon follows the hash-and-sign paradigm and is constructed using NTRU lattices~\cite{HPS98}. To generate signatures, Falcon employs a trapdoor sampling algorithm known as fast Fourier sampling~\cite{EPRINT:DucPre15b}. Its security relies on the hardness of finding short vectors in NTRU lattices, commonly formulated as the NTRU-SIS problem.
 
 We refer the interested reader to~\cite{Falcon} for further details on the construction\footnote{We have to draw the line somewhere on what to include in this handout.}.
 
-\subsection{Fiat Shamir with abort \& Schnorr-like digital signature schemes}
+\subsection{Fiat Shamir with abort \& Schnorr-like digital signature schemes}\label{sec:FS}
 In parallel with trapdoor-based approaches, another direction of lattice-based signatures emerged. Starting with the ring-SIS-based one-time signature of \cite{TCC:LyuMic08}, which then inspired subsequent works of Schnorr-like \cite{JC:Schnorr91} three round identification protocols, which by applying the Fiat–Shamir transform \cite{C:FiaSha86}, yields digital signatures with security proofs in the random-oracle model \cite{PKC:Lyubashevsky08,EC:Lyubashevsky12}.
 
 In this section, we first introduce the idea behind the three-round identification scheme by Lyubashevsky \cite{PKC:Lyubashevsky08} as a warm-up, before presenting the NIST-standardized signature scheme ML-DSA.
@@ -103,12 +103,37 @@ First, to avoid any confusion, ML-DSA is NISTs official name for the signature s
 
 The module-lattice-based digital signature algorithm (ML-DSA) is technically involved and has several subtleties. To provide intuition for its design choices, we first present a slightly simplified version of ML-DSA \footnote{For the full version please see the NIST specifications: https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf} and then discuss several of its technical aspects. At a high level, ML-DSA is based on a Schnorr-like identification protocol transformed into a digital signature scheme using the Fiat–Shamir transform. However, as discussed above, in the lattice-based setting, rejection sampling is required to prevent leakage of information about the secret key, the same principle applies to ML-DSA as we will see.
 
+The following notation is used in ML-DSA-
+\begin{multicols}{2}
+\begin{itemize}
+    \item \(\ZZ_q\) - is the set of integers\(\mod \: q\)
+    \item \(\text{mods } q\) - in the symmetric modulo \(q\) operator.
+    \item \(R_q =\ZZ_q[x]/(x^n+1)\)
+    \item \(S_x\) - set of polynomials in \(R_q\) with mods \(q\) coefficients in \((-x,x]\). 
+    \item \(B_\tau\) - polynomials in \(S_1\) for which exactly \(\tau\) of coefficient are non-zero.
+\end{itemize}
+\end{multicols}
+
+To give a concrete example of the terminology used in Figure~\ref{fig:ml-dsa} and we present a concrete example by stating an (insufficent) overview of ML-DSA-87 domain parameters.
+
+\begin{multicols}{3}
+\begin{itemize}
+    \item \(q = 2^{23}-2^{13}-1\)
+    \item \(n=256\)
+    \item \((k,l) = (8,7)\) and \(k\geq l\)
+    \item \(\eta = 2\)
+    \item \(\gamma_1 = 2^{19}\)
+    \item \(\tau = 60\), \(\beta:=\tau\eta = 120\)
+    \item \(\lambda=256\)
+\end{itemize}
+\end{multicols}
 
 Figure~\ref{fig:ml-dsa} present a conceptually correct but highly simplified version of ML-DSA, actually the scheme in Figure~\ref{fig:ml-dsa} is (almost) Lyubashevsky rejection sampling \cite{AC:Lyubashevsky09,EC:Lyubashevsky12}. Below we list some technical aspects and insights of this simplified version of ML-DSA, that directly translates also to the full ML-DSA implementation.
 \begin{description}
 \item[Why do we need \(\mathsf{HighBits}\) and \(\mathsf{LowBits}\) algorithms?]
 
-        As explained in the comments to the algorithm \(\ver\) in Figure~\ref{fig:ml-dsa}, the verifier can't compute \(\mathbf{Ay}\), but only \(\mathbf{Ay}-c\mathbf{s}_2\). Thus, since \(H(M|| \mathbf{Ay}) \neq H(m||\mathbf{Ay}-c\mathbf{s}_2)\), the verification would fail, unless we do the trick with High and Low bits.
+        As explained in the comments to the algorithm \(\ver\) in Figure~\ref{fig:ml-dsa}, the verifier can't compute \(\mathbf{Ay}\), but only \(\mathbf{Ay}-c\mathbf{s}_2\). Thus, since \(H(M|| \mathbf{Ay}) \neq H(m||\mathbf{Ay}-c\mathbf{s}_2)\), the verification would fail, unless we do the trick with the algorthms \(\mathsf{HighBits}\) and \(\mathsf{LowBits}\) as shown in Figure~\ref{fig:ml-dsa}. 
+        Since \(||c\mathbf{s}_2||_\infty\leq \beta\) by definition, if \(||\mathsf{LowBits}(\mathbf{Ay}-c\mathsf{s}_2)||\leq \gamma_2-\beta\) then it holds that \(\mathsf{HighBits}(\mathbf{Ay}) = \mathsf{HighBits}(\mathbf{Ay}-c\mathbf{s}_2)\), which is what is needed for correctness to hold.
     
 \item[Why do we need rejection sampling based on the infinity-norm of \(\mathbf{z}\)?]
 
@@ -116,8 +141,9 @@ Figure~\ref{fig:ml-dsa} present a conceptually correct but highly simplified ver
     $\mathbf{z}$ lies in \( (-\gamma_1-\beta,\gamma_1+\beta]\cap\mathbb{Z}. \)
     Since each coefficient of $\mathbf{y}$ lies in$(-\gamma_1,\gamma_1]$ and $\|c\mathbf{s}_1\|_\infty \leq \beta$.
     Consequently, observing a coefficient of  $\mathbf{z}$ equal to $\gamma_1+\beta$ reveals that the corresponding coefficient of $c\mathbf{s}_1$ equals $\beta$.
-    Thus, the signature may leak information about the secret key $\mathbf{s}_1$, since \(c\) is known. Similarly, if a coefficient of a polynomial in \(\mathbf{z}\) is \(\gamma_1-\beta-1\), then the corresponding coefficient of \(c\mathbf{s}_1\) must be either \(\beta-1\) or \(\beta\).
-    \item[What is \(B_\tau\) any why do \(c\) need to be in this set?] 
+    Thus, the signature may leak information about the secret key $\mathbf{s}_1$, since \(c\) is known.
+
+    \item[What is \(B_\tau\) any why do \(c\) need to be in this set?] This is to ensure that multiplication by \(c\) preserves the smallness to the secrets \((\mathbf{s}_1,\mathbf{s}_2)\) and at the same time providing sufficiently large sample space to ensure security. Specifically, we have that since \(||\mathbf{s}_1||_\infty\leq \eta \) then \(||c \mathbf{s}_1||_\infty\leq \tau \eta := \beta \), the last equality follows from the definition of the parameters in ML-DSA\cite{NISTPQC-R3:CRYSTALS-DILITHIUM20}.
 \end{description}
 
 
@@ -130,6 +156,8 @@ We will not go into full details of the ML-DSA construction, but we will outline
 
 The signature scheme in Figure~\ref{fig:ml-dsa} suffers from large public and secret keys. Roughly the size of the matrix \(\mathbf{A}\) is \(41\)kB, and the size of \(\mathbf{t}\) is \(6\)kB. Partially this is solved in ML-DSA by generating \(\mathbf{A}\) from a public $256$-bit seed \(\rho\), this reduces the size of the public key to the size of \(\rho + \mathbf{t}\). The size of \(\mathbf{t}\) can be reduced by only considering \textit{the high order bits}\footnote{Not to be mixed up with the \(\mathsf{HighBits}\).} of the coefficient of the polynomials in \(\mathbf{t}\), for more details see \cite{NISTPQC-R3:CRYSTALS-DILITHIUM20}. The size of the secret keys can be reduced by generating \((\mathbf{s}_1,\mathbf{s}_2)\) from a $512$-bit seed \(\rho'\).
 
-A second issue with the construction in Figure~\ref{fig:ml-dsa}, is that the hash of the message is computed in each iteration of the rejection sampling, Line~\ref{step:hash-M} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, this is slow if the message \(M\) is large. This is solved by computing \(\mu=H(M)\) outside the while-loop and then computing \(c=H(\mu||\mathbf{w})\) in each iteration.
+A second issue is the large amount of random bits needed in each iteration of the rejection-sampling in the signature algorithm, Line~\ref{step:sample-y} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, in ML-DSA this is made more efficient by computing \(\mathbf{y}\) from a seed \(\rho''\) and a counter \(\kappa\), the seed \(\rho''\) is obtained by shaing a secret seed key, \(K\), and the message hash \(\mu\) and the counter is incremented in each iteration. Remark that this makes the signature algorithm deterministic. 
+In ML-DSA the random seeds mentioned above are computed as follows. 
+During key generation the signer samples \(\xi\randfrom \{0,1\}^{256}\) and then computes \((\rho,\rho',K)\gets H(\xi,1024)\). Then during signing, the signer computes \(\rho''\gets H(K||\mathsf{rnd}||\mu,512)\), the next paragraph defined \(\mu\). Remark that \(\mathsf{rnd}\) is either equal to \(0^{256}\) for deterministic signing or \(\mathsf{rnd}\randfrom\{0,1\}^{256}\) otherwise.
 
-A third issue is the large amount of random bits needed in each iteration of the rejection-sampling in the signature algorithm, Line~\ref{step:sample-y} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, in ML-DSA this is made more efficient by computing \(\mathbf{y}\) from a seed \(\rho''\) and a counter \(\kappa\), the seed \(\rho''\) is obtained by shaing a secret seed key, \(K\), and the message hash \(\mu\) and the counter is incremented in each iteration. Remark that this makes the signature algorithm deterministic.
+A third issue with the construction in Figure~\ref{fig:ml-dsa}, is that the hash of the message is computed in each iteration of the rejection sampling, Line~\ref{step:hash-M} of the algorithm \(\sign\) in Figure~\ref{fig:ml-dsa}, this is slow if the message \(M\) is large. This is solved by computing \(\mu=H(M)\) outside the while-loop and then computing \(c=H(\mu||\mathbf{w})\) in each iteration.
