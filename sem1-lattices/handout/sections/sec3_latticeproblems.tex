@@ -53,22 +53,6 @@ The main hardness result of LWE is the theorem below and is due to Regev. The th
 
 This theorem is the reason that LWE is one of the most robust assumptions for lattice-based cryptography. However, a still unsolved problem is finding a fully classical tight reduction. 
 
-\subsection{Short Integer Solutions (SIS)}
-The SIS problem is closely related to LWE and was introduced before LWE by Ajtai in 1996. It is a natural starting point for one-way functions and collision-resistant hash functions. However, it is not encryption-enabling as LWE is. We present the problem and comment on similarities and differences from LWE.
-
-\begin{definition}[SIS$_{\nd, q, \beta, m}$, as presented in \cite{peikert_dec}]
-    Given a uniformly random matrix $\vv A \randfrom \ZZ_q^{\nd \times m}$, find a nonzero integer vector $\vv z \in \ZZ^m$ with norm $|| \vv z || \leq \beta$ such that \[ \vv A \vv z = \sum_{i = 1}^m a_i \cdot z_i = \vv 0 \in \ZZ_q^\nd. \]
-\end{definition}
-Similarly to the intuition for LWE, this problem is easy to solve using Gaussian elimination without the norm constraint. There also exists an upper bound $\beta < q$, since $\vv z = (q, 0, \ldots, 0)$ is a valid solution. The resulting family of functions $f_{\vv A}(\vv z) = \vv A \vv z$ can be shown to be collision resistant, since a collision would directly lead to an SIS solution. As with the size of the error in LWE, $\beta$ must be selected sufficiently large that a solution exists (for correctness), while keeping it small enough that the problem is hard. The sweet spot results in cryptography.
-
-SIS is an average case (approximate) shortest vector problem on the lattices
-\begin{align}\label{eq:q-array-lattice}
-    \LL^\bot(\vv A) = \{ \vv z \in \ZZ^m : \vv A \vv z = 0 \in \ZZ_q^\nd \},
-\end{align}
-which is also a $q$-ary lattice. In fact, $\LL^\bot(\vv A)$ is the \textit{dual} (up to scaling factor) of the LWE lattice $\LL(\vv A)$, formally $\LL(\vv A) = q \LL^\bot(\vv A)^*$.
-
-A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. This means SIS and LWE are reducible to each other. The interested reader is referred to <sources>.
-
 \subsection{Ring-LWE}
 Lyabashevsky, Peikert and Regev (LPR) introduced a structured variant of LWE, called Ring-LWE, in 2010 \cite{lpr10}. We build on the discussion on LWE to introduce ring-LWE. The exposition is mainly based on \cite{peikert_dec}. The structure of Ring-LWE allows for speedups because ring multiplications replace the generic matrix-vector multiplications in LWE. Ring multiplication can be performed in quasi-linear time using FFT-like techniques (such as Number Theoretic Transform (NTT)). Ring-LWE is parametrised over a ring $R$ of degree $\nd$ over $\ZZ$ and a modulus $q$, together with an error distribution $\chi$ over $R$. The primary working environment is the quotient ring $R_q = R/qR$. The ring $R$ is typically a cyclotomic ring $R = \ZZ[x]/(x^\nd + 1)$ for $\nd$ a power of two and the error distirbution is typically a discrete Gaussian in the canonical embedding of $R$ with an error rate $\alpha < 1$ relative to $q$.
 
@@ -109,7 +93,7 @@ Note here that the inner product is taken over $d$-vectors of polynomials. The \
     Let $d = 2$, $\vv s = (s_1, s_2)$ and $\vv a = (a_1, a_2)$ where each $s_i, a_i \in R_q$. Then $\langle \vv s, \vv a \rangle = s_1 \cdot a_1 + s_2 \cdot a_2$, where $\cdot$ is polynomial multiplication.
 \end{example}
 
-The search and decision variants of the Module-LWE problem are natural extensions of the corresponding LWE and ring-LWE problems. Given $m$ many Module-LWE samples $((\vv a_i, b_i))_i \in R_q^{m \times d} \times R_q^m$, the search problem asks to recover $\vv s \in R_q^d$, and the decision problem asks to distinguish the samples from the same number $m$ of independent uniform samples over $R_q^d \times R_q$. The search variant reduces to the decision variant (cite LS15).
+The search and decision variants of the Module-LWE problem are natural extensions of the corresponding LWE and ring-LWE problems. Given $m$ many Module-LWE samples $((\vv a_i, b_i))_i \in R_q^{m \times d} \times R_q^m$, the search problem asks to recover $\vv s \in R_q^d$, and the decision problem asks to distinguish the samples from the same number $m$ of independent uniform samples over $R_q^d \times R_q$. The search variant reduces to the decision variant \cite{ls15}.
 
 The main theorem of Module-LWE makes use of a generalisation of SIVP$_\gamma$ called the Generalised Independent Vectors Problem (GIVP$_\gamma^\phi$), which asks to find linearly independent vectors $\{ s_1, \ldots, s_\nd \} \in \LL(\vv B)$ such that $\max || \vv s_i || \leq \gamma(\nd) \phi(\LL(\vv B))$. In other words, the successive minima $\lambda_n(\LL(\vv B))$ are replaced by an arbitrary real-valued function $\phi$ in GIVP$_\gamma^\phi$. The result specifically uses the smooting parameter $\eta_\epsilon(\LL)$ as $\phi$.
 
@@ -118,3 +102,34 @@ The main theorem of Module-LWE makes use of a generalisation of SIVP$_\gamma$ ca
 \end{theorem}
 
 As we will see below, Module LWE is the assumption used to construct Kyber (ML-KEM).
+
+\subsection{Short Integer Solutions (SIS)}
+The SIS problem is closely related to LWE and was introduced before LWE by Ajtai in 1996. It is a natural starting point for one-way functions and collision-resistant hash functions. However, it is not encryption-enabling as LWE is. We present the problem and comment on similarities and differences from LWE.
+
+\begin{definition}[SIS$_{\nd, q, \beta, m}$, as presented in \cite{peikert_dec}]
+    Given a uniformly random matrix $\vv A \randfrom \ZZ_q^{\nd \times m}$, find a nonzero integer vector $\vv z \in \ZZ^m$ with norm $|| \vv z || \leq \beta$ such that \[ \vv A \vv z = \sum_{i = 1}^m a_i \cdot z_i = \vv 0 \in \ZZ_q^\nd. \]
+\end{definition}
+Similarly to the intuition for LWE, this problem is easy to solve using Gaussian elimination without the norm constraint. There also exists an upper bound $\beta < q$, since $\vv z = (q, 0, \ldots, 0)$ is a valid solution. The resulting family of functions $f_{\vv A}(\vv z) = \vv A \vv z$ can be shown to be collision resistant, since a collision would directly lead to an SIS solution. As with the size of the error in LWE, $\beta$ must be selected sufficiently large that a solution exists (for correctness), while keeping it small enough that the problem is hard. The sweet spot results in cryptography.
+
+SIS is an average case (approximate) shortest vector problem on the lattices
+\begin{align}\label{eq:q-array-lattice}
+    \LL^\bot(\vv A) = \{ \vv z \in \ZZ^m : \vv A \vv z = 0 \in \ZZ_q^\nd \},
+\end{align}
+which is also a $q$-ary lattice. In fact, $\LL^\bot(\vv A)$ is the \textit{dual} (up to scaling factor) of the LWE lattice $\LL(\vv A)$, formally $\LL(\vv A) = q \LL^\bot(\vv A)^*$.
+
+A similar reduction from GapSVP$_\gamma$ and SIVP$_\gamma$ to SIS exists due to Ajtai, which further cements the deep and intricate relationship between LWE and SIS. This means SIS and LWE are reducible to each other. The interested reader is referred to \cite{peikert_dec,cryptoeprint:2021/1358,ajt96}.
+
+\subsubsection{Module-SIS}
+Langlois and Stehlé \cite{ls15} also introduced a variant of SIS over modules called Module-SIS (MSIS). We give the definition of the problem. The ring $R$ below is normally the same as in Ring-LWE: a cyclotomic ring $R = \ZZ [x] / (x^n + 1)$ for $n$ a power of two, however other rings such as $R = \ZZ [x] /(x^n -1)$ for $n$ prime have also been studied.
+
+\begin{definition}[Module-SIS]
+    Given uniformly chosen $\vv a_1, \ldots, \vv a_m \in R_q^d$, find a vector of polynomials $\vv z = (z_1, \ldots, z_m) \in R^m$ with norm $0 < || \vv z || \leq \beta$ such that \[ \sum_i^m \vv a_i \cdot z_i  = \vv 0 \in R_q^d. \]
+\end{definition}
+
+A ring variant of SIS (RSIS) can be recovered by setting $d = 1$. As before, we recover unstructured SIS by setting $n = 1$. 
+
+Finally, we state the MSIS main theorem, which is similar to the corresponding theorem for Module-LWE (but does not involve a quantum reduction).
+\begin{theorem}[Module-SIS main theorem, abridged \cite{ls15}]
+    Given $d \geq 1$, there exists a probabalistic polynomial time reduction from GIVP$_\gamma^{\eta_\epsilon}$ restricted to module lattices to the MSIS problem.
+\end{theorem}
+The MSIS problem is used to construct the digital signature scheme Dilithium (ML-DSA).
